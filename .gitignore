@@ -1,12 +1,17 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-
-# Compiled Dynamic libraries
-*.so
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
+.DS_Store
+*.ncb
+*.opensdf
+*.sdf
+*.sln
+*.suo
+*.vcproj.*
+*.user
+*.ilk
+*.obj
+*.lastbuildstate
+*.manifest
+*.tlog
+*.pdb
+*.log
+*.idb
+*.filters
