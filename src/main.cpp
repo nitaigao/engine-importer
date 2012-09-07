@@ -33,6 +33,32 @@
 
 #include <windows.h>
 
+MIntArray GetLocalIndex( MIntArray & getVertices, MIntArray & getTriangle )
+{
+  MIntArray   localIndex;
+  unsigned    gv, gt;
+
+  assert ( getTriangle.length() == 3 );    // Should always deal with a triangle
+
+  for ( gt = 0; gt < getTriangle.length(); gt++ )
+  {
+    for ( gv = 0; gv < getVertices.length(); gv++ )
+    {
+      if ( getTriangle[gt] == getVertices[gv] )
+      {
+        localIndex.append( gv );
+        break;
+      }
+    }
+
+    // if nothing was added, add default "no match"
+    if ( localIndex.length() == gt )
+      localIndex.append( -1 );
+  }
+
+  return localIndex;
+}
+
 void extractPolygons(json::Object& jsonObject) {
   MStatus stat;
   MItDag dagIter(MItDag::kBreadthFirst, MFn::kInvalid, &stat);
@@ -56,6 +82,9 @@ void extractPolygons(json::Object& jsonObject) {
     MPointArray vertexList;
     fnMesh.getPoints(vertexList, MSpace::kWorld);
 
+    MFloatVectorArray  meshNormals;
+    fnMesh.getNormals(meshNormals);
+
     unsigned instanceNumber = dagPath.instanceNumber();
     MObjectArray sets;
     MObjectArray comps;
@@ -71,6 +100,7 @@ void extractPolygons(json::Object& jsonObject) {
       itPolygon.numTriangles(count);
 
       json::Array verticesJSONArray;
+      json::Array normalsJSONArray;
 
       while (count--) {
         MPointArray                     nonTweaked;
@@ -78,59 +108,112 @@ void extractPolygons(json::Object& jsonObject) {
         MIntArray                       localIndex;
 
         MStatus  status;
-        status = itPolygon.getTriangle( count, nonTweaked, triangleVertices, MSpace::kObject );
+        status = itPolygon.getTriangle(count, nonTweaked, triangleVertices, MSpace::kObject);
 
         if (status == MS::kSuccess) {
-          MInt64 vertexCount = vertexList.length();
-          
           {
-            MInt64 vertexIndex0 = triangleVertices[0];
-            MPoint point0 = vertexList[vertexIndex0];
+            MInt64 vertexCount = vertexList.length();
+            
+            {
+              MInt64 vertexIndex0 = triangleVertices[0];
+              MPoint point0 = vertexList[vertexIndex0];
 
-            json::Number xJSONNumber = point0.x;
-            verticesJSONArray.Insert(xJSONNumber);
+              json::Number xJSONNumber = point0.x;
+              verticesJSONArray.Insert(xJSONNumber);
 
-            json::Number yJSONNumber = point0.y;
-            verticesJSONArray.Insert(yJSONNumber);
+              json::Number yJSONNumber = point0.y;
+              verticesJSONArray.Insert(yJSONNumber);
 
-            json::Number zJSONNumber = point0.z;
-            verticesJSONArray.Insert(zJSONNumber);
+              json::Number zJSONNumber = point0.z;
+              verticesJSONArray.Insert(zJSONNumber);
+            }
+
+
+            {
+              MInt64 vertexIndex1 = triangleVertices[2];
+              MPoint point1 = vertexList[vertexIndex1];
+
+              json::Number xJSONNumber = point1.x;
+              verticesJSONArray.Insert(xJSONNumber);
+
+              json::Number yJSONNumber = point1.y;
+              verticesJSONArray.Insert(yJSONNumber);
+
+              json::Number zJSONNumber = point1.z;
+              verticesJSONArray.Insert(zJSONNumber);
+            }
+
+            {
+              MInt64 vertexIndex2 = triangleVertices[1];
+              MPoint point2= vertexList[vertexIndex2];
+
+              json::Number xJSONNumber = point2.x;
+              verticesJSONArray.Insert(xJSONNumber);
+
+              json::Number yJSONNumber = point2.y;
+              verticesJSONArray.Insert(yJSONNumber);
+
+              json::Number zJSONNumber = point2.z;
+              verticesJSONArray.Insert(zJSONNumber);
+            }
+
           }
 
+          { // normals
 
-          {
-            MInt64 vertexIndex1 = triangleVertices[2];
-            MPoint point1 = vertexList[vertexIndex1];
+            // Get face-relative vertex indices for this triangle
+            localIndex = GetLocalIndex(polygonVertices, triangleVertices);
 
-            json::Number xJSONNumber = point1.x;
-            verticesJSONArray.Insert(xJSONNumber);
+            {
+              MInt64 index0 = itPolygon.normalIndex(localIndex[0]);
+              MPoint point0 = meshNormals[index0];
 
-            json::Number yJSONNumber = point1.y;
-            verticesJSONArray.Insert(yJSONNumber);
+              json::Number xJSONNumber = point0.x;
+              normalsJSONArray.Insert(xJSONNumber);
 
-            json::Number zJSONNumber = point1.z;
-            verticesJSONArray.Insert(zJSONNumber);
+              json::Number yJSONNumber = point0.y;
+              normalsJSONArray.Insert(yJSONNumber);
+
+              json::Number zJSONNumber = point0.z;
+              normalsJSONArray.Insert(zJSONNumber);
+            }
+
+
+            {
+              MInt64 index1 = itPolygon.normalIndex(localIndex[2]);
+              MPoint point1 = meshNormals[index1];
+
+              json::Number xJSONNumber = point1.x;
+              normalsJSONArray.Insert(xJSONNumber);
+
+              json::Number yJSONNumber = point1.y;
+              normalsJSONArray.Insert(yJSONNumber);
+
+              json::Number zJSONNumber = point1.z;
+              normalsJSONArray.Insert(zJSONNumber);
+            }
+
+            {
+              MInt64 index2 = itPolygon.normalIndex(localIndex[1]);
+              MPoint point2 = meshNormals[index2];
+
+              json::Number xJSONNumber = point2.x;
+              normalsJSONArray.Insert(xJSONNumber);
+
+              json::Number yJSONNumber = point2.y;
+              normalsJSONArray.Insert(yJSONNumber);
+
+              json::Number zJSONNumber = point2.z;
+              normalsJSONArray.Insert(zJSONNumber);
+            }
           }
-
-          {
-            MInt64 vertexIndex2 = triangleVertices[1];
-            MPoint point2= vertexList[vertexIndex2];
-
-            json::Number xJSONNumber = point2.x;
-            verticesJSONArray.Insert(xJSONNumber);
-
-            json::Number yJSONNumber = point2.y;
-            verticesJSONArray.Insert(yJSONNumber);
-
-            json::Number zJSONNumber = point2.z;
-            verticesJSONArray.Insert(zJSONNumber);
-          }
-
         }
+        
       }
 
 
       meshJSONObject["vertices"] = verticesJSONArray;
+      meshJSONObject["normals"] = normalsJSONArray;
     }
 
     meshesJSONArray.Insert(meshJSONObject);
