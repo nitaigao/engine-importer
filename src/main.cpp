@@ -79,6 +79,15 @@ void extractPolygons(json::Object& jsonObject) {
 
     MFnMesh fnMesh(dagPath);
 
+    
+    MStringArray  UVSets;
+    stat = fnMesh.getUVSetNames( UVSets );
+
+    // Get all UVs for the first UV set.
+    MFloatArray   u, v;
+    fnMesh.getUVs(u, v, &UVSets[0]);
+
+
     MPointArray vertexList;
     fnMesh.getPoints(vertexList, MSpace::kWorld);
 
@@ -101,6 +110,7 @@ void extractPolygons(json::Object& jsonObject) {
 
       json::Array verticesJSONArray;
       json::Array normalsJSONArray;
+      json::Array uvsJSONArray;
 
       while (count--) {
         MPointArray                     nonTweaked;
@@ -207,6 +217,57 @@ void extractPolygons(json::Object& jsonObject) {
               normalsJSONArray.Insert(zJSONNumber);
             }
           }
+
+          { // uvs
+
+            int uvID[3];
+
+            for (unsigned int vtxInPolygon = 0; vtxInPolygon < 3; vtxInPolygon++) {
+              itPolygon.getUVIndex(localIndex[vtxInPolygon], uvID[vtxInPolygon]);
+            }
+
+
+            {
+              MInt64 index0 = uvID[0];
+
+              float uvu = u[index0];
+              float uvv = v[index0];
+
+              json::Number uJSONNumber = uvu;
+              uvsJSONArray.Insert(uJSONNumber);
+
+              json::Number vJSONNumber = uvv;
+              uvsJSONArray.Insert(vJSONNumber);
+            }
+
+
+            {
+              MInt64 index0 = uvID[2];
+
+              float uvu = u[index0];
+              float uvv = v[index0];
+
+              json::Number uJSONNumber = uvu;
+              uvsJSONArray.Insert(uJSONNumber);
+
+              json::Number vJSONNumber = uvv;
+              uvsJSONArray.Insert(vJSONNumber);
+            }
+
+
+            {
+              MInt64 index0 = uvID[1];
+
+              float uvu = u[index0];
+              float uvv = v[index0];
+
+              json::Number uJSONNumber = uvu;
+              uvsJSONArray.Insert(uJSONNumber);
+
+              json::Number vJSONNumber = uvv;
+              uvsJSONArray.Insert(vJSONNumber);
+            }
+          }
         }
         
       }
@@ -214,6 +275,7 @@ void extractPolygons(json::Object& jsonObject) {
 
       meshJSONObject["vertices"] = verticesJSONArray;
       meshJSONObject["normals"] = normalsJSONArray;
+      meshJSONObject["uvs"] = uvsJSONArray;
     }
 
     meshesJSONArray.Insert(meshJSONObject);
