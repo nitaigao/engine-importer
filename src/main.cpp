@@ -304,6 +304,7 @@ void extractPolygons(json::Object& jsonObject) {
         }
 
         materialJSONObject["parameters"] = parametersJSONObject;
+        materialJSONObject["textures"] = json::Object();
 
         meshJSONObject["material"] = materialJSONObject; 
 
