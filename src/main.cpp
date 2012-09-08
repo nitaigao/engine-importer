@@ -272,6 +272,43 @@ void extractPolygons(json::Object& jsonObject) {
         
       }
 
+      {
+        json::Object materialJSONObject;
+
+        materialJSONObject["effect"] = json::String("cgfx/deferred_render_color_normal_depth.hlsl");
+
+        json::Object parametersJSONObject;
+
+        {
+          json::Object specularPowerJSONObject;
+          specularPowerJSONObject["value"] = json::Number(80);
+          specularPowerJSONObject["type"] = json::String("float");
+
+          parametersJSONObject["SpecularPower"] = specularPowerJSONObject;
+        }
+
+        {
+          json::Object specularIntensityJSONObject;
+          specularIntensityJSONObject["value"] = json::Number(0.5f);
+          specularIntensityJSONObject["type"] = json::String("float");
+
+          parametersJSONObject["SpecularIntensity"] = specularIntensityJSONObject;
+        }
+
+        {
+          json::Object diffusePowerJSONObject;
+          diffusePowerJSONObject["value"] = json::Number(0.01f);
+          diffusePowerJSONObject["type"] = json::String("float");
+
+          parametersJSONObject["DiffusePower"] = diffusePowerJSONObject;
+        }
+
+        materialJSONObject["parameters"] = parametersJSONObject;
+
+        meshJSONObject["material"] = materialJSONObject; 
+
+      }
+
 
       meshJSONObject["vertices"] = verticesJSONArray;
       meshJSONObject["normals"] = normalsJSONArray;
