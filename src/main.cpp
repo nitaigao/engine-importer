@@ -89,7 +89,7 @@ void extractPolygons(json::Object& jsonObject) {
 
 
     MPointArray vertexList;
-    fnMesh.getPoints(vertexList, MSpace::kWorld);
+    fnMesh.getPoints(vertexList, MSpace::kObject);
 
     MFloatVectorArray  meshNormals;
     fnMesh.getNormals(meshNormals);
@@ -99,20 +99,25 @@ void extractPolygons(json::Object& jsonObject) {
     MObjectArray comps;
     fnMesh.getConnectedSetsAndMembers( instanceNumber, sets, comps, true );
 
-    MItMeshPolygon itPolygon( dagPath, MObject::kNullObj );
-    for (; !itPolygon.isDone(); itPolygon.next()) {
+    unsigned int comlength = comps.length();
 
+    json::Array verticesJSONArray;
+    json::Array normalsJSONArray;
+    json::Array uvsJSONArray;
+
+    MItMeshPolygon itPolygon(dagPath, comps[0]);
+    //itPolygon.next();
+
+    unsigned int polyCount = 0;
+    for (; !itPolygon.isDone(); itPolygon.next()) {
+      polyCount++;
       MIntArray                           polygonVertices;
       itPolygon.getVertices(polygonVertices);
 
       int count;
       itPolygon.numTriangles(count);
 
-      json::Array verticesJSONArray;
-      json::Array normalsJSONArray;
-      json::Array uvsJSONArray;
-
-      while (count--) {
+      for (; count > -1; count--) {
         MPointArray                     nonTweaked;
         MIntArray                       triangleVertices;
         MIntArray                       localIndex;
@@ -309,12 +314,13 @@ void extractPolygons(json::Object& jsonObject) {
         meshJSONObject["material"] = materialJSONObject; 
 
       }
-
-
-      meshJSONObject["vertices"] = verticesJSONArray;
-      meshJSONObject["normals"] = normalsJSONArray;
-      meshJSONObject["uvs"] = uvsJSONArray;
     }
+
+    std::clog << "Processed " << polyCount << " polygons" << std::endl;
+
+    meshJSONObject["vertices"] = verticesJSONArray;
+    meshJSONObject["normals"] = normalsJSONArray;
+    meshJSONObject["uvs"] = uvsJSONArray;
 
     meshesJSONArray.Insert(meshJSONObject);
   }
@@ -325,27 +331,36 @@ void extractPolygons(json::Object& jsonObject) {
 int main(int argc, char **argv)  {
   MStatus stat = MLibrary::initialize(argv[0]);
   if (!stat) {
+    std::cerr << "Failed to initialize Maya" << std::endl;
     return 1;
   }
     
-  char* fileName = argv[1];
+  char* inputFilename = argv[1];
+  char* outputFilename = argv[2];
+  std::clog << "Compiling " << inputFilename << " to " << outputFilename << "." << std::endl;
 
   // prepare Maya to read a new scene file
   MFileIO::newFile(true);
 
-  stat = MFileIO::open( fileName );
-  if ( !stat )
+  stat = MFileIO::open(inputFilename);
+  if ( !stat ) {
+    std::cerr << "Failed to open maya source file: " << stat.errorString().asUTF8() << std::endl;
     return 1;
+  }
 
   stat = MGlobal::executeCommand( "delete -ch" );
-  if ( !stat )
+  if (!stat) {
+    std::cerr << "Failed to cleanup maya source objects" << std::endl;
     return 1;
+  }
 
   json::Object jsonObject;
   extractPolygons(jsonObject);
 
-  std::ofstream outputFile(argv[2]);
+  std::ofstream outputFile(outputFilename);
   json::Writer::Write(jsonObject, outputFile);
+
+  std::clog << "Compilation finished" << std::endl;
 
   MLibrary::cleanup();
 
