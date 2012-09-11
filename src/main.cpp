@@ -146,7 +146,7 @@ void extractPolygons(json::Object& jsonObject) {
 
 
             {
-              MInt64 vertexIndex1 = triangleVertices[2];
+              MInt64 vertexIndex1 = triangleVertices[1];
               MPoint point1 = vertexList[vertexIndex1];
 
               json::Number xJSONNumber = point1.x;
@@ -160,7 +160,7 @@ void extractPolygons(json::Object& jsonObject) {
             }
 
             {
-              MInt64 vertexIndex2 = triangleVertices[1];
+              MInt64 vertexIndex2 = triangleVertices[2];
               MPoint point2= vertexList[vertexIndex2];
 
               json::Number xJSONNumber = point2.x;
@@ -196,7 +196,7 @@ void extractPolygons(json::Object& jsonObject) {
 
 
             {
-              MInt64 index1 = itPolygon.normalIndex(localIndex[2]);
+              MInt64 index1 = itPolygon.normalIndex(localIndex[1]);
               MPoint point1 = meshNormals[index1];
 
               json::Number xJSONNumber = point1.x;
@@ -210,7 +210,7 @@ void extractPolygons(json::Object& jsonObject) {
             }
 
             {
-              MInt64 index2 = itPolygon.normalIndex(localIndex[1]);
+              MInt64 index2 = itPolygon.normalIndex(localIndex[2]);
               MPoint point2 = meshNormals[index2];
 
               json::Number xJSONNumber = point2.x;
@@ -248,7 +248,7 @@ void extractPolygons(json::Object& jsonObject) {
 
 
             {
-              MInt64 index0 = uvID[2];
+              MInt64 index0 = uvID[1];
 
               float uvu = u[index0];
               float uvv = v[index0];
@@ -262,7 +262,7 @@ void extractPolygons(json::Object& jsonObject) {
 
 
             {
-              MInt64 index0 = uvID[1];
+              MInt64 index0 = uvID[2];
 
               float uvu = u[index0];
               float uvv = v[index0];
