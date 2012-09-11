@@ -26,7 +26,7 @@
 #include <maya/MFnMesh.h>
 #include <maya/MPointArray.h>
 #include <maya/MItMeshPolygon.h>
-
+#include <maya/MFnLambertShader.h>
 
 
 #include <writer.h>
@@ -93,6 +93,7 @@ void extractPolygons(json::Object& jsonObject) {
 
     MFloatVectorArray  meshNormals;
     fnMesh.getNormals(meshNormals);
+
 
     unsigned instanceNumber = dagPath.instanceNumber();
     MObjectArray sets;
@@ -276,44 +277,77 @@ void extractPolygons(json::Object& jsonObject) {
         }
         
       }
+    }
+
+    {
+      json::Object materialJSONObject;
+
+      materialJSONObject["effect"] = json::String("cgfx/deferred_render_color_normal_depth.hlsl");
+
+      json::Object parametersJSONObject;
 
       {
-        json::Object materialJSONObject;
-
-        materialJSONObject["effect"] = json::String("cgfx/deferred_render_color_normal_depth.hlsl");
-
-        json::Object parametersJSONObject;
-
+        MObjectArray shaders;
+        MIntArray indices;
+        fnMesh.getConnectedShaders(0, shaders, indices);
+        for(unsigned int i = 0; i < shaders.length(); i++)
         {
-          json::Object specularPowerJSONObject;
-          specularPowerJSONObject["value"] = json::Number(80);
-          specularPowerJSONObject["type"] = json::String("float");
+          MPlugArray connections;
+          MFnDependencyNode shaderGroup(shaders[i]);
+          MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
+          shaderPlug.connectedTo(connections, true, false);
+          for(unsigned int u = 0; u < connections.length(); u++)
+          {
+            if(connections[u].node().hasFn(MFn::kLambert))
+            {
+              MPlugArray plugs;
+              MFnLambertShader lambertShader(connections[u].node());
+              lambertShader.findPlug("color").connectedTo(plugs, true, false);
 
-          parametersJSONObject["SpecularPower"] = specularPowerJSONObject;
+              MColor color = lambertShader.color();
+
+              json::Object diffuseColorJSONObject;
+              diffuseColorJSONObject["type"] = json::String("color3");
+              diffuseColorJSONObject["r"] = json::Number(color.r);
+              diffuseColorJSONObject["g"] = json::Number(color.g);
+              diffuseColorJSONObject["b"] = json::Number(color.b);
+
+              parametersJSONObject["DiffuseColor"] = diffuseColorJSONObject;
+
+            }
+          }
         }
-
-        {
-          json::Object specularIntensityJSONObject;
-          specularIntensityJSONObject["value"] = json::Number(0.5f);
-          specularIntensityJSONObject["type"] = json::String("float");
-
-          parametersJSONObject["SpecularIntensity"] = specularIntensityJSONObject;
-        }
-
-        {
-          json::Object diffusePowerJSONObject;
-          diffusePowerJSONObject["value"] = json::Number(0.01f);
-          diffusePowerJSONObject["type"] = json::String("float");
-
-          parametersJSONObject["DiffusePower"] = diffusePowerJSONObject;
-        }
-
-        materialJSONObject["parameters"] = parametersJSONObject;
-        materialJSONObject["textures"] = json::Object();
-
-        meshJSONObject["material"] = materialJSONObject; 
-
       }
+
+      {
+        json::Object specularPowerJSONObject;
+        specularPowerJSONObject["value"] = json::Number(1);
+        specularPowerJSONObject["type"] = json::String("float");
+
+        parametersJSONObject["SpecularPower"] = specularPowerJSONObject;
+      }
+
+      {
+        json::Object specularIntensityJSONObject;
+        specularIntensityJSONObject["value"] = json::Number(1.0f);
+        specularIntensityJSONObject["type"] = json::String("float");
+
+        parametersJSONObject["SpecularIntensity"] = specularIntensityJSONObject;
+      }
+
+      {
+        json::Object diffusePowerJSONObject;
+        diffusePowerJSONObject["value"] = json::Number(1.0f);
+        diffusePowerJSONObject["type"] = json::String("float");
+
+        parametersJSONObject["DiffusePower"] = diffusePowerJSONObject;
+      }
+
+      materialJSONObject["parameters"] = parametersJSONObject;
+      materialJSONObject["textures"] = json::Object();
+
+      meshJSONObject["material"] = materialJSONObject; 
+
     }
 
     std::clog << "Processed " << polyCount << " polygons" << std::endl;
