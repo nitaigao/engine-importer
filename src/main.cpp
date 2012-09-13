@@ -102,261 +102,264 @@ void extractPolygons(json::Object& jsonObject) {
 
     unsigned int comlength = comps.length();
 
-    json::Array verticesJSONArray;
-    json::Array normalsJSONArray;
-    json::Array uvsJSONArray;
+    for (int compi = 0; compi < comlength; compi++) {
 
-    MItMeshPolygon itPolygon(dagPath, comps[0]);
-    //itPolygon.next();
+      json::Array verticesJSONArray;
+      json::Array normalsJSONArray;
+      json::Array uvsJSONArray;
 
-    unsigned int polyCount = 0;
-    for (; !itPolygon.isDone(); itPolygon.next()) {
-      polyCount++;
-      MIntArray                           polygonVertices;
-      itPolygon.getVertices(polygonVertices);
+      MItMeshPolygon itPolygon(dagPath, comps[compi]);
+      //itPolygon.next();
 
-      int count;
-      itPolygon.numTriangles(count);
+      unsigned int polyCount = 0;
+      for (; !itPolygon.isDone(); itPolygon.next()) {
+        polyCount++;
+        MIntArray                           polygonVertices;
+        itPolygon.getVertices(polygonVertices);
 
-      for (; count > -1; count--) {
-        MPointArray                     nonTweaked;
-        MIntArray                       triangleVertices;
-        MIntArray                       localIndex;
+        int count;
+        itPolygon.numTriangles(count);
 
-        MStatus  status;
-        status = itPolygon.getTriangle(count, nonTweaked, triangleVertices, MSpace::kObject);
+        for (; count > -1; count--) {
+          MPointArray                     nonTweaked;
+          MIntArray                       triangleVertices;
+          MIntArray                       localIndex;
 
-        if (status == MS::kSuccess) {
-          {
-            MInt64 vertexCount = vertexList.length();
-            
+          MStatus  status;
+          status = itPolygon.getTriangle(count, nonTweaked, triangleVertices, MSpace::kObject);
+
+          if (status == MS::kSuccess) {
             {
-              MInt64 vertexIndex0 = triangleVertices[0];
-              MPoint point0 = vertexList[vertexIndex0];
+              MInt64 vertexCount = vertexList.length();
+              
+              {
+                MInt64 vertexIndex0 = triangleVertices[0];
+                MPoint point0 = vertexList[vertexIndex0];
 
-              json::Number xJSONNumber = point0.x;
-              verticesJSONArray.Insert(xJSONNumber);
+                json::Number xJSONNumber = point0.x;
+                verticesJSONArray.Insert(xJSONNumber);
 
-              json::Number yJSONNumber = point0.y;
-              verticesJSONArray.Insert(yJSONNumber);
+                json::Number yJSONNumber = point0.y;
+                verticesJSONArray.Insert(yJSONNumber);
 
-              json::Number zJSONNumber = point0.z;
-              verticesJSONArray.Insert(zJSONNumber);
+                json::Number zJSONNumber = point0.z;
+                verticesJSONArray.Insert(zJSONNumber);
+              }
+
+
+              {
+                MInt64 vertexIndex1 = triangleVertices[1];
+                MPoint point1 = vertexList[vertexIndex1];
+
+                json::Number xJSONNumber = point1.x;
+                verticesJSONArray.Insert(xJSONNumber);
+
+                json::Number yJSONNumber = point1.y;
+                verticesJSONArray.Insert(yJSONNumber);
+
+                json::Number zJSONNumber = point1.z;
+                verticesJSONArray.Insert(zJSONNumber);
+              }
+
+              {
+                MInt64 vertexIndex2 = triangleVertices[2];
+                MPoint point2= vertexList[vertexIndex2];
+
+                json::Number xJSONNumber = point2.x;
+                verticesJSONArray.Insert(xJSONNumber);
+
+                json::Number yJSONNumber = point2.y;
+                verticesJSONArray.Insert(yJSONNumber);
+
+                json::Number zJSONNumber = point2.z;
+                verticesJSONArray.Insert(zJSONNumber);
+              }
+
             }
 
+            { // normals
 
-            {
-              MInt64 vertexIndex1 = triangleVertices[1];
-              MPoint point1 = vertexList[vertexIndex1];
+              // Get face-relative vertex indices for this triangle
+              localIndex = GetLocalIndex(polygonVertices, triangleVertices);
 
-              json::Number xJSONNumber = point1.x;
-              verticesJSONArray.Insert(xJSONNumber);
+              {
+                MInt64 index0 = itPolygon.normalIndex(localIndex[0]);
+                MPoint point0 = meshNormals[index0];
 
-              json::Number yJSONNumber = point1.y;
-              verticesJSONArray.Insert(yJSONNumber);
+                json::Number xJSONNumber = point0.x;
+                normalsJSONArray.Insert(xJSONNumber);
 
-              json::Number zJSONNumber = point1.z;
-              verticesJSONArray.Insert(zJSONNumber);
+                json::Number yJSONNumber = point0.y;
+                normalsJSONArray.Insert(yJSONNumber);
+
+                json::Number zJSONNumber = point0.z;
+                normalsJSONArray.Insert(zJSONNumber);
+              }
+
+
+              {
+                MInt64 index1 = itPolygon.normalIndex(localIndex[1]);
+                MPoint point1 = meshNormals[index1];
+
+                json::Number xJSONNumber = point1.x;
+                normalsJSONArray.Insert(xJSONNumber);
+
+                json::Number yJSONNumber = point1.y;
+                normalsJSONArray.Insert(yJSONNumber);
+
+                json::Number zJSONNumber = point1.z;
+                normalsJSONArray.Insert(zJSONNumber);
+              }
+
+              {
+                MInt64 index2 = itPolygon.normalIndex(localIndex[2]);
+                MPoint point2 = meshNormals[index2];
+
+                json::Number xJSONNumber = point2.x;
+                normalsJSONArray.Insert(xJSONNumber);
+
+                json::Number yJSONNumber = point2.y;
+                normalsJSONArray.Insert(yJSONNumber);
+
+                json::Number zJSONNumber = point2.z;
+                normalsJSONArray.Insert(zJSONNumber);
+              }
             }
 
-            {
-              MInt64 vertexIndex2 = triangleVertices[2];
-              MPoint point2= vertexList[vertexIndex2];
+            { // uvs
 
-              json::Number xJSONNumber = point2.x;
-              verticesJSONArray.Insert(xJSONNumber);
+              int uvID[3];
 
-              json::Number yJSONNumber = point2.y;
-              verticesJSONArray.Insert(yJSONNumber);
+              for (unsigned int vtxInPolygon = 0; vtxInPolygon < 3; vtxInPolygon++) {
+                itPolygon.getUVIndex(localIndex[vtxInPolygon], uvID[vtxInPolygon]);
+              }
 
-              json::Number zJSONNumber = point2.z;
-              verticesJSONArray.Insert(zJSONNumber);
+
+              {
+                MInt64 index0 = uvID[0];
+
+                float uvu = u[index0];
+                float uvv = v[index0];
+
+                json::Number uJSONNumber = uvu;
+                uvsJSONArray.Insert(uJSONNumber);
+
+                json::Number vJSONNumber = uvv;
+                uvsJSONArray.Insert(vJSONNumber);
+              }
+
+
+              {
+                MInt64 index0 = uvID[1];
+
+                float uvu = u[index0];
+                float uvv = v[index0];
+
+                json::Number uJSONNumber = uvu;
+                uvsJSONArray.Insert(uJSONNumber);
+
+                json::Number vJSONNumber = uvv;
+                uvsJSONArray.Insert(vJSONNumber);
+              }
+
+
+              {
+                MInt64 index0 = uvID[2];
+
+                float uvu = u[index0];
+                float uvv = v[index0];
+
+                json::Number uJSONNumber = uvu;
+                uvsJSONArray.Insert(uJSONNumber);
+
+                json::Number vJSONNumber = uvv;
+                uvsJSONArray.Insert(vJSONNumber);
+              }
             }
-
           }
-
-          { // normals
-
-            // Get face-relative vertex indices for this triangle
-            localIndex = GetLocalIndex(polygonVertices, triangleVertices);
-
-            {
-              MInt64 index0 = itPolygon.normalIndex(localIndex[0]);
-              MPoint point0 = meshNormals[index0];
-
-              json::Number xJSONNumber = point0.x;
-              normalsJSONArray.Insert(xJSONNumber);
-
-              json::Number yJSONNumber = point0.y;
-              normalsJSONArray.Insert(yJSONNumber);
-
-              json::Number zJSONNumber = point0.z;
-              normalsJSONArray.Insert(zJSONNumber);
-            }
-
-
-            {
-              MInt64 index1 = itPolygon.normalIndex(localIndex[1]);
-              MPoint point1 = meshNormals[index1];
-
-              json::Number xJSONNumber = point1.x;
-              normalsJSONArray.Insert(xJSONNumber);
-
-              json::Number yJSONNumber = point1.y;
-              normalsJSONArray.Insert(yJSONNumber);
-
-              json::Number zJSONNumber = point1.z;
-              normalsJSONArray.Insert(zJSONNumber);
-            }
-
-            {
-              MInt64 index2 = itPolygon.normalIndex(localIndex[2]);
-              MPoint point2 = meshNormals[index2];
-
-              json::Number xJSONNumber = point2.x;
-              normalsJSONArray.Insert(xJSONNumber);
-
-              json::Number yJSONNumber = point2.y;
-              normalsJSONArray.Insert(yJSONNumber);
-
-              json::Number zJSONNumber = point2.z;
-              normalsJSONArray.Insert(zJSONNumber);
-            }
-          }
-
-          { // uvs
-
-            int uvID[3];
-
-            for (unsigned int vtxInPolygon = 0; vtxInPolygon < 3; vtxInPolygon++) {
-              itPolygon.getUVIndex(localIndex[vtxInPolygon], uvID[vtxInPolygon]);
-            }
-
-
-            {
-              MInt64 index0 = uvID[0];
-
-              float uvu = u[index0];
-              float uvv = v[index0];
-
-              json::Number uJSONNumber = uvu;
-              uvsJSONArray.Insert(uJSONNumber);
-
-              json::Number vJSONNumber = uvv;
-              uvsJSONArray.Insert(vJSONNumber);
-            }
-
-
-            {
-              MInt64 index0 = uvID[1];
-
-              float uvu = u[index0];
-              float uvv = v[index0];
-
-              json::Number uJSONNumber = uvu;
-              uvsJSONArray.Insert(uJSONNumber);
-
-              json::Number vJSONNumber = uvv;
-              uvsJSONArray.Insert(vJSONNumber);
-            }
-
-
-            {
-              MInt64 index0 = uvID[2];
-
-              float uvu = u[index0];
-              float uvv = v[index0];
-
-              json::Number uJSONNumber = uvu;
-              uvsJSONArray.Insert(uJSONNumber);
-
-              json::Number vJSONNumber = uvv;
-              uvsJSONArray.Insert(vJSONNumber);
-            }
-          }
+          
         }
-        
       }
-    }
-
-    {
-      json::Object materialJSONObject;
-
-      materialJSONObject["effect"] = json::String("cgfx/deferred_render_color_normal_depth.hlsl");
-
-      json::Object parametersJSONObject;
 
       {
-        MObjectArray shaders;
-        MIntArray indices;
-        fnMesh.getConnectedShaders(0, shaders, indices);
-        for(unsigned int i = 0; i < shaders.length(); i++)
+        json::Object materialJSONObject;
+
+        materialJSONObject["effect"] = json::String("cgfx/deferred_render_color_normal_depth.hlsl");
+
+        json::Object parametersJSONObject;
+
         {
-          MPlugArray connections;
-          MFnDependencyNode shaderGroup(shaders[i]);
-          MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
-          shaderPlug.connectedTo(connections, true, false);
-          for(unsigned int u = 0; u < connections.length(); u++)
+          MObjectArray shaders;
+          MIntArray indices;
+          fnMesh.getConnectedShaders(0, shaders, indices);
+          for(unsigned int i = 0; i < shaders.length(); i++)
           {
-            if(connections[u].node().hasFn(MFn::kLambert))
+            MPlugArray connections;
+            MFnDependencyNode shaderGroup(shaders[i]);
+            MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
+            shaderPlug.connectedTo(connections, true, false);
+            for(unsigned int u = 0; u < connections.length(); u++)
             {
-              MPlugArray plugs;
-              MFnLambertShader lambertShader(connections[u].node());
-              lambertShader.findPlug("color").connectedTo(plugs, true, false);
+              if(connections[u].node().hasFn(MFn::kLambert))
+              {
+                MPlugArray plugs;
+                MFnLambertShader lambertShader(connections[u].node());
+                lambertShader.findPlug("color").connectedTo(plugs, true, false);
 
-              MColor color = lambertShader.color();
+                MColor color = lambertShader.color();
 
-              json::Object diffuseColorJSONObject;
-              diffuseColorJSONObject["type"] = json::String("color3");
-              diffuseColorJSONObject["r"] = json::Number(color.r);
-              diffuseColorJSONObject["g"] = json::Number(color.g);
-              diffuseColorJSONObject["b"] = json::Number(color.b);
+                json::Object diffuseColorJSONObject;
+                diffuseColorJSONObject["type"] = json::String("color3");
+                diffuseColorJSONObject["r"] = json::Number(color.r);
+                diffuseColorJSONObject["g"] = json::Number(color.g);
+                diffuseColorJSONObject["b"] = json::Number(color.b);
 
-              parametersJSONObject["DiffuseColor"] = diffuseColorJSONObject;
+                parametersJSONObject["DiffuseColor"] = diffuseColorJSONObject;
 
+              }
             }
           }
         }
+
+        {
+          json::Object specularPowerJSONObject;
+          specularPowerJSONObject["value"] = json::Number(1);
+          specularPowerJSONObject["type"] = json::String("float");
+
+          parametersJSONObject["SpecularPower"] = specularPowerJSONObject;
+        }
+
+        {
+          json::Object specularIntensityJSONObject;
+          specularIntensityJSONObject["value"] = json::Number(1.0f);
+          specularIntensityJSONObject["type"] = json::String("float");
+
+          parametersJSONObject["SpecularIntensity"] = specularIntensityJSONObject;
+        }
+
+        {
+          json::Object diffusePowerJSONObject;
+          diffusePowerJSONObject["value"] = json::Number(1.0f);
+          diffusePowerJSONObject["type"] = json::String("float");
+
+          parametersJSONObject["DiffusePower"] = diffusePowerJSONObject;
+        }
+
+        materialJSONObject["parameters"] = parametersJSONObject;
+        materialJSONObject["textures"] = json::Object();
+
+        meshJSONObject["material"] = materialJSONObject; 
+
       }
 
-      {
-        json::Object specularPowerJSONObject;
-        specularPowerJSONObject["value"] = json::Number(1);
-        specularPowerJSONObject["type"] = json::String("float");
+      std::clog << "Processed " << polyCount << " polygons" << std::endl;
 
-        parametersJSONObject["SpecularPower"] = specularPowerJSONObject;
-      }
+      meshJSONObject["vertices"] = verticesJSONArray;
+      meshJSONObject["normals"] = normalsJSONArray;
+      meshJSONObject["uvs"] = uvsJSONArray;
 
-      {
-        json::Object specularIntensityJSONObject;
-        specularIntensityJSONObject["value"] = json::Number(1.0f);
-        specularIntensityJSONObject["type"] = json::String("float");
-
-        parametersJSONObject["SpecularIntensity"] = specularIntensityJSONObject;
-      }
-
-      {
-        json::Object diffusePowerJSONObject;
-        diffusePowerJSONObject["value"] = json::Number(1.0f);
-        diffusePowerJSONObject["type"] = json::String("float");
-
-        parametersJSONObject["DiffusePower"] = diffusePowerJSONObject;
-      }
-
-      materialJSONObject["parameters"] = parametersJSONObject;
-      materialJSONObject["textures"] = json::Object();
-
-      meshJSONObject["material"] = materialJSONObject; 
-
+      meshesJSONArray.Insert(meshJSONObject);
     }
-
-    std::clog << "Processed " << polyCount << " polygons" << std::endl;
-
-    meshJSONObject["vertices"] = verticesJSONArray;
-    meshJSONObject["normals"] = normalsJSONArray;
-    meshJSONObject["uvs"] = uvsJSONArray;
-
-    meshesJSONArray.Insert(meshJSONObject);
   }
 
   jsonObject["submeshes"] = meshesJSONArray;
