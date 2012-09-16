@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 class IMaterialParameter;
 class IFileWriter;
@@ -15,6 +16,8 @@ public:
 
   void addParameter(IMaterialParameter* parameter);
 
+  void addTexture(const std::string& key, const std::string& fileName);
+
 public:
 
   void write(IFileWriter* writer);
@@ -25,7 +28,7 @@ private:
 
   std::vector<IMaterialParameter*> parameters_;
 
-  std::vector<std::string> textures_;
+  std::map<std::string, std::string> textures_;
 
 };
 
@@ -36,5 +39,10 @@ inline void Material::setEffect(const std::string& effectFilePathRelative) {
 inline void Material::addParameter(IMaterialParameter* parameter) {
   parameters_.push_back(parameter);
 }
+
+inline void Material::addTexture(const std::string& key, const std::string& fileName) {
+  textures_[key] = fileName;
+}
+
 
 #endif

@@ -30,6 +30,7 @@
 #include <maya/MPointArray.h>
 #include <maya/MItMeshPolygon.h>
 #include <maya/MFnLambertShader.h>
+#include <maya/MFnPhongShader.h>
 
 #include "Model.h"
 #include "VertexDefinition.h"
@@ -269,6 +270,21 @@ void extractPolygons(Model* model) {
                 MPlugArray plugs;
                 MFnLambertShader lambertShader(connections[u].node());
                 lambertShader.findPlug("color").connectedTo(plugs, true, false);
+
+                for (unsigned int p = 0; p < plugs.length(); p++) {
+                  if (plugs[i].node().hasFn(MFn::kFileTexture)) {
+                    MFnDependencyNode* diffuseMapNode = new MFnDependencyNode(plugs[i].node());
+
+                    MPlug filenamePlug = diffuseMapNode->findPlug ("fileTextureName");
+                    MString mayaFileName;
+                    filenamePlug.getValue (mayaFileName);
+                    std::string diffuseMapFileName = mayaFileName.asChar();
+
+                    material.addTexture("DiffuseColor", diffuseMapFileName);
+
+                    // do something with the texture
+                  }
+                }
 
                 MColor color = lambertShader.color();
 

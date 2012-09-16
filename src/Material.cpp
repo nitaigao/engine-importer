@@ -15,7 +15,7 @@ void Material::write(IFileWriter* writer) {
 
   writer->writeValue(textures_.size());
 
-  for (std::vector<std::string>::iterator i = textures_.begin(); i != textures_.end(); ++i) {
-  	writer->writeString(*i);
+  for (std::map<std::string, std::string>::iterator i = textures_.begin(); i != textures_.end(); ++i) {
+  	writer->writeKeyValue((*i).first, (*i).second);
   }
 }
