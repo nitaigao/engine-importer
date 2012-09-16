@@ -1,5 +1,5 @@
-#ifndef MODELFILE_H_
-#define MODELFILE_H_
+#ifndef Model_H_
+#define Model_H_
 
 #include <vector>
 
@@ -7,7 +7,7 @@
 
 class IFileWriter;
 
-class ModelFile {
+class Model {
 
 public:
 
@@ -21,7 +21,7 @@ private:
 
 };
 
-inline void ModelFile::addSubMesh(const SubMesh& submesh) {
+inline void Model::addSubMesh(const SubMesh& submesh) {
   submeshes_.push_back(submesh);
 }
 

@@ -1,6 +1,6 @@
 #include "SubMesh.h"
 
-#include "IFileWriter.hpp"
+#include "IFileWriter.h"
 
 void SubMesh::write(IFileWriter* writer) {
   material_.write(writer);

@@ -17,6 +17,8 @@ public:
 
   virtual void close() = 0;
 
+  virtual bool acceptExtension(const std::string& extension) = 0;
+
 public:
 
   virtual void writeValue(unsigned int value) = 0;
@@ -30,6 +32,11 @@ public:
   virtual void writeKeyValue(const std::string& key, const std::string& value) = 0;
 
   virtual void writeKeyValue(const std::string& key, float value) = 0;
+
+public:
+
+  static IFileWriter* writeFile(const std::string& outputFilename);
+
 
 };
 

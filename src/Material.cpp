@@ -2,7 +2,7 @@
 
 #include "IMaterialParameter.h"
 
-#include "IFileWriter.hpp"
+#include "IFileWriter.h"
 
 void Material::write(IFileWriter* writer) {
   writer->writeString(effectFilePath_);

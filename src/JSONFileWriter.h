@@ -1,7 +1,7 @@
 #ifndef JSONFILEWRITER_H_
 #define JSONFILEWRITER_H_
 
-#include "IFileWriter.hpp"
+#include "IFileWriter.h"
 
 #include <writer.h>
 

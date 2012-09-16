@@ -65,3 +65,8 @@ void BinaryFileWriter::writeKeyValue(const std::string& key, const Vector3& valu
   stream_.write((char*)&valueType, sizeof(int));
   stream_.write((char*)&value, sizeof(Vector3));
 }
+
+bool BinaryFileWriter::acceptExtension(const std::string& extension) {
+  bool isModelBinary = extension.compare("modelbinary") == 0;
+  return isModelBinary;
+}
