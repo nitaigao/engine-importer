@@ -1,0 +1,35 @@
+global proc string filepart( string $path )
+{
+  string $filepart = match( "[^/\\]*$", $path );
+
+  return $filepart;
+};
+
+global proc string pathpart( string $path )
+{
+  string $dir = match( "^.*/", $path );
+
+  int $sz = size( $dir );
+  // Strip off trailing '/'
+  //
+  if ( ( $sz > 1 ) && ( substring( $dir, $sz, $sz ) == "/" ) ) {
+    $dir = substring( $dir, 1, ($sz - 1) );
+  }
+  return $dir;
+};
+
+
+global proc string basenamepart( string $filename )
+{
+  string $filepart = match( "^[^.]*", $filename );
+  return $filepart;
+};
+
+string $filePath = `file -q -sceneName`;
+string $pathName = pathpart($filePath);
+string $fileName = filepart($filePath);
+string $baseName = basenamepart($fileName);
+
+
+file -save;
+system("C:/Users/NK/Development/importer/src/x64/Debug/importer.exe " + $filePath + " " + $pathName + "/" + $baseName + ".modelbinary");

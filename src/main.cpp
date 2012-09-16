@@ -33,6 +33,16 @@
 
 #include <windows.h>
 
+#include "BinaryFileWriter.h"
+#include "JSONFileWriter.h"
+#include "ModelFile.h"
+#include "VertexDefinition.h"
+#include "SubMesh.h"
+#include "Material.h"
+
+#include "Vector3MaterialParameter.h"
+#include "FloatMaterialParameter.h"
+
 MIntArray GetLocalIndex( MIntArray & getVertices, MIntArray & getTriangle )
 {
   MIntArray   localIndex;
@@ -59,18 +69,20 @@ MIntArray GetLocalIndex( MIntArray & getVertices, MIntArray & getTriangle )
   return localIndex;
 }
 
-void extractPolygons(json::Object& jsonObject) {
+inline float clamp(float x, float a, float b)
+{
+  return x < a ? a : (x > b ? b : x);
+}
+
+void extractPolygons(ModelFile& modelFile) {
   MStatus stat;
   MItDag dagIter(MItDag::kBreadthFirst, MFn::kInvalid, &stat);
 
-  json::Array meshesJSONArray;
-
-  for (; !dagIter.isDone(); dagIter.next()) {
+ for (; !dagIter.isDone(); dagIter.next()) {
     MDagPath dagPath;
     stat = dagIter.getPath(dagPath);
     if (!stat) { continue; };
 
-    json::Object meshJSONObject;
     MFnDagNode dagNode(dagPath, &stat);
 
     if (dagNode.isIntermediateObject()) continue;
@@ -78,7 +90,6 @@ void extractPolygons(json::Object& jsonObject) {
     if (dagPath.hasFn( MFn::kTransform)) continue;
 
     MFnMesh fnMesh(dagPath);
-
     
     MStringArray  UVSets;
     stat = fnMesh.getUVSetNames( UVSets );
@@ -102,14 +113,11 @@ void extractPolygons(json::Object& jsonObject) {
 
     unsigned int comlength = comps.length();
 
-    for (int compi = 0; compi < comlength; compi++) {
+    for (unsigned int compi = 0; compi < comlength; compi++) {
 
-      json::Array verticesJSONArray;
-      json::Array normalsJSONArray;
-      json::Array uvsJSONArray;
+      SubMesh submesh;
 
       MItMeshPolygon itPolygon(dagPath, comps[compi]);
-      //itPolygon.next();
 
       unsigned int polyCount = 0;
       for (; !itPolygon.isDone(); itPolygon.next()) {
@@ -129,50 +137,40 @@ void extractPolygons(json::Object& jsonObject) {
           status = itPolygon.getTriangle(count, nonTweaked, triangleVertices, MSpace::kObject);
 
           if (status == MS::kSuccess) {
-            {
+
+            VertexDefinition vertex1;
+            VertexDefinition vertex2;
+            VertexDefinition vertex3;
+
+            { // vertices
+
               MInt64 vertexCount = vertexList.length();
               
               {
                 MInt64 vertexIndex0 = triangleVertices[0];
                 MPoint point0 = vertexList[vertexIndex0];
 
-                json::Number xJSONNumber = point0.x;
-                verticesJSONArray.Insert(xJSONNumber);
-
-                json::Number yJSONNumber = point0.y;
-                verticesJSONArray.Insert(yJSONNumber);
-
-                json::Number zJSONNumber = point0.z;
-                verticesJSONArray.Insert(zJSONNumber);
-              }
-
-
-              {
-                MInt64 vertexIndex1 = triangleVertices[1];
-                MPoint point1 = vertexList[vertexIndex1];
-
-                json::Number xJSONNumber = point1.x;
-                verticesJSONArray.Insert(xJSONNumber);
-
-                json::Number yJSONNumber = point1.y;
-                verticesJSONArray.Insert(yJSONNumber);
-
-                json::Number zJSONNumber = point1.z;
-                verticesJSONArray.Insert(zJSONNumber);
+                vertex1.vertex.x = point0.x;
+                vertex1.vertex.y = point0.y;
+                vertex1.vertex.z = point0.z;
               }
 
               {
-                MInt64 vertexIndex2 = triangleVertices[2];
-                MPoint point2= vertexList[vertexIndex2];
+                MInt64 vertexIndex0 = triangleVertices[1];
+                MPoint point0 = vertexList[vertexIndex0];
 
-                json::Number xJSONNumber = point2.x;
-                verticesJSONArray.Insert(xJSONNumber);
+                vertex2.vertex.x = point0.x;
+                vertex2.vertex.y = point0.y;
+                vertex2.vertex.z = point0.z;
+              }
 
-                json::Number yJSONNumber = point2.y;
-                verticesJSONArray.Insert(yJSONNumber);
+              {
+                MInt64 vertexIndex0 = triangleVertices[2];
+                MPoint point0 = vertexList[vertexIndex0];
 
-                json::Number zJSONNumber = point2.z;
-                verticesJSONArray.Insert(zJSONNumber);
+                vertex3.vertex.x = point0.x;
+                vertex3.vertex.y = point0.y;
+                vertex3.vertex.z = point0.z;
               }
 
             }
@@ -186,43 +184,27 @@ void extractPolygons(json::Object& jsonObject) {
                 MInt64 index0 = itPolygon.normalIndex(localIndex[0]);
                 MPoint point0 = meshNormals[index0];
 
-                json::Number xJSONNumber = point0.x;
-                normalsJSONArray.Insert(xJSONNumber);
-
-                json::Number yJSONNumber = point0.y;
-                normalsJSONArray.Insert(yJSONNumber);
-
-                json::Number zJSONNumber = point0.z;
-                normalsJSONArray.Insert(zJSONNumber);
-              }
-
-
-              {
-                MInt64 index1 = itPolygon.normalIndex(localIndex[1]);
-                MPoint point1 = meshNormals[index1];
-
-                json::Number xJSONNumber = point1.x;
-                normalsJSONArray.Insert(xJSONNumber);
-
-                json::Number yJSONNumber = point1.y;
-                normalsJSONArray.Insert(yJSONNumber);
-
-                json::Number zJSONNumber = point1.z;
-                normalsJSONArray.Insert(zJSONNumber);
+                vertex1.normal.x = point0.x;
+                vertex1.normal.y = point0.y;
+                vertex1.normal.z = point0.z;
               }
 
               {
-                MInt64 index2 = itPolygon.normalIndex(localIndex[2]);
-                MPoint point2 = meshNormals[index2];
+                MInt64 index0 = itPolygon.normalIndex(localIndex[1]);
+                MPoint point0 = meshNormals[index0];
 
-                json::Number xJSONNumber = point2.x;
-                normalsJSONArray.Insert(xJSONNumber);
+                vertex2.normal.x = point0.x;
+                vertex2.normal.y = point0.y;
+                vertex2.normal.z = point0.z;
+              }
 
-                json::Number yJSONNumber = point2.y;
-                normalsJSONArray.Insert(yJSONNumber);
+              {
+                MInt64 index0 = itPolygon.normalIndex(localIndex[2]);
+                MPoint point0 = meshNormals[index0];
 
-                json::Number zJSONNumber = point2.z;
-                normalsJSONArray.Insert(zJSONNumber);
+                vertex3.normal.x = point0.x;
+                vertex3.normal.y = point0.y;
+                vertex3.normal.z = point0.z;
               }
             }
 
@@ -237,56 +219,43 @@ void extractPolygons(json::Object& jsonObject) {
 
               {
                 MInt64 index0 = uvID[0];
-
                 float uvu = u[index0];
                 float uvv = v[index0];
 
-                json::Number uJSONNumber = uvu;
-                uvsJSONArray.Insert(uJSONNumber);
-
-                json::Number vJSONNumber = uvv;
-                uvsJSONArray.Insert(vJSONNumber);
+                vertex1.uv.x = uvu;
+                vertex1.uv.y = 1.0f - uvv;
               }
-
 
               {
                 MInt64 index0 = uvID[1];
-
                 float uvu = u[index0];
                 float uvv = v[index0];
 
-                json::Number uJSONNumber = uvu;
-                uvsJSONArray.Insert(uJSONNumber);
-
-                json::Number vJSONNumber = uvv;
-                uvsJSONArray.Insert(vJSONNumber);
+                vertex2.uv.x = uvu;
+                vertex2.uv.y = 1.0f - uvv;
               }
-
-
+              
               {
                 MInt64 index0 = uvID[2];
-
                 float uvu = u[index0];
                 float uvv = v[index0];
 
-                json::Number uJSONNumber = uvu;
-                uvsJSONArray.Insert(uJSONNumber);
-
-                json::Number vJSONNumber = uvv;
-                uvsJSONArray.Insert(vJSONNumber);
+                vertex3.uv.x = uvu;
+                vertex3.uv.y = 1.0f - uvv; // directx
               }
             }
+
+            submesh.addVertex(vertex1);
+            submesh.addVertex(vertex2);
+            submesh.addVertex(vertex3);
           }
-          
         }
       }
 
       {
-        json::Object materialJSONObject;
+        Material material;
 
-        materialJSONObject["effect"] = json::String("cgfx/deferred_render_color_normal_depth.hlsl");
-
-        json::Object parametersJSONObject;
+        material.setEffect("cgfx/deferred_render_color_normal_depth.hlsl");
 
         {
           MObjectArray shaders;
@@ -308,61 +277,41 @@ void extractPolygons(json::Object& jsonObject) {
 
                 MColor color = lambertShader.color();
 
-                json::Object diffuseColorJSONObject;
-                diffuseColorJSONObject["type"] = json::String("color3");
-                diffuseColorJSONObject["r"] = json::Number(color.r);
-                diffuseColorJSONObject["g"] = json::Number(color.g);
-                diffuseColorJSONObject["b"] = json::Number(color.b);
+                Vector3MaterialParameter* diffuseColorParameter = new Vector3MaterialParameter("DiffuseColor");
+                diffuseColorParameter->value.x = color.r;
+                diffuseColorParameter->value.y = color.g;
+                diffuseColorParameter->value.z = color.b;
 
-                parametersJSONObject["DiffuseColor"] = diffuseColorJSONObject;
-
+                material.addParameter(diffuseColorParameter);
               }
             }
           }
         }
 
         {
-          json::Object specularPowerJSONObject;
-          specularPowerJSONObject["value"] = json::Number(1);
-          specularPowerJSONObject["type"] = json::String("float");
-
-          parametersJSONObject["SpecularPower"] = specularPowerJSONObject;
+          FloatMaterialParameter* specularPowerParameter = new FloatMaterialParameter("SpecularPower");
+          specularPowerParameter->value = 1.0;
+          material.addParameter(specularPowerParameter);
         }
 
         {
-          json::Object specularIntensityJSONObject;
-          specularIntensityJSONObject["value"] = json::Number(1.0f);
-          specularIntensityJSONObject["type"] = json::String("float");
-
-          parametersJSONObject["SpecularIntensity"] = specularIntensityJSONObject;
+          FloatMaterialParameter* specularIntensityParameter = new FloatMaterialParameter("SpecularIntensity");
+          specularIntensityParameter->value = 1.0f;
+          material.addParameter(specularIntensityParameter);
         }
 
         {
-          json::Object diffusePowerJSONObject;
-          diffusePowerJSONObject["value"] = json::Number(1.0f);
-          diffusePowerJSONObject["type"] = json::String("float");
-
-          parametersJSONObject["DiffusePower"] = diffusePowerJSONObject;
+          FloatMaterialParameter* diffusePowerParameter = new FloatMaterialParameter("DiffusePower");
+          diffusePowerParameter->value = 1.0f;
+          material.addParameter(diffusePowerParameter);
         }
 
-        materialJSONObject["parameters"] = parametersJSONObject;
-        materialJSONObject["textures"] = json::Object();
-
-        meshJSONObject["material"] = materialJSONObject; 
-
+        submesh.setMaterial(material);
       }
 
-      std::clog << "Processed " << polyCount << " polygons" << std::endl;
-
-      meshJSONObject["vertices"] = verticesJSONArray;
-      meshJSONObject["normals"] = normalsJSONArray;
-      meshJSONObject["uvs"] = uvsJSONArray;
-
-      meshesJSONArray.Insert(meshJSONObject);
+      modelFile.addSubMesh(submesh);
     }
   }
-
-  jsonObject["submeshes"] = meshesJSONArray;
 }
 
 int main(int argc, char **argv)  {
@@ -390,12 +339,16 @@ int main(int argc, char **argv)  {
     std::cerr << "Failed to cleanup maya source objects" << std::endl;
     return 1;
   }
+  
+  ModelFile modelFile;
+  extractPolygons(modelFile);
 
-  json::Object jsonObject;
-  extractPolygons(jsonObject);
+  IFileWriter* writer = new BinaryFileWriter();
+  writer->openFile(outputFilename);
 
-  std::ofstream outputFile(outputFilename);
-  json::Writer::Write(jsonObject, outputFile);
+  modelFile.write(writer);
+
+  writer->close();
 
   std::clog << "Compilation finished" << std::endl;
 
