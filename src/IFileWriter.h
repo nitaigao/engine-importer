@@ -1,42 +1,21 @@
-#ifndef IFILEWRITER_HPP_
-#define IFILEWRITER_HPP_
-
-class SubMesh;
-class Vector3;
-class Material;
-class VertexDefinition;
+#ifndef IFILEWRITER_H_
+#define IFILEWRITER_H_
 
 #include <string>
-#include <vector>
+
+class Model;
 
 class IFileWriter {
 
 public:
 
-  virtual void openFile(const char* filePath) = 0;
-
-  virtual void close() = 0;
+  static IFileWriter* writerForFile(const std::string& outputFilename);
+  
+public:
 
   virtual bool acceptExtension(const std::string& extension) = 0;
-
-public:
-
-  virtual void writeValue(unsigned int value) = 0;
-
-  virtual void writeVertexData(VertexDefinition* data, unsigned int size) = 0;
-
-  virtual void writeString(const std::string& value) = 0;
-
-  virtual void writeKeyValue(const std::string& key, const Vector3& value) = 0;
-
-  virtual void writeKeyValue(const std::string& key, const std::string& value) = 0;
-
-  virtual void writeKeyValue(const std::string& key, float value) = 0;
-
-public:
-
-  static IFileWriter* writeFile(const std::string& outputFilename);
-
+  
+  virtual void writeModel(Model* model, const std::string& outputFilename) = 0;
 
 };
 

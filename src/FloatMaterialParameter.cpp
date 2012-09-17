@@ -1,7 +1,7 @@
 #include "FloatMaterialParameter.h"
 
-#include "IFileWriter.h"
+#include "IOutputStream.h"
 
-void FloatMaterialParameter::write(IFileWriter* writer) {
+void FloatMaterialParameter::write(IOutputStream* writer) {
   writer->writeKeyValue(name_, value);
 }

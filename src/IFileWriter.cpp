@@ -4,7 +4,9 @@
 #include "BinaryFileWriter.h"
 #include "DefaultFileWriter.h"
 
-IFileWriter* IFileWriter::writeFile(const std::string& outputFilename) {
+#include <vector>
+
+IFileWriter* IFileWriter::writerForFile(const std::string& outputFilename) {
   std::string outputExtension = extension(outputFilename);
 
   std::vector<IFileWriter*> writers;
@@ -19,3 +21,4 @@ IFileWriter* IFileWriter::writeFile(const std::string& outputFilename) {
 
   return NULL;
 }
+

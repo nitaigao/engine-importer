@@ -6,7 +6,7 @@
 #include <map>
 
 class IMaterialParameter;
-class IFileWriter;
+class IOutputStream;
 
 class Material {
 
@@ -20,7 +20,7 @@ public:
 
 public:
 
-  void write(IFileWriter* writer);
+  void write(IOutputStream* writer);
 
 private:
 

@@ -2,9 +2,9 @@
 
 #include "IMaterialParameter.h"
 
-#include "IFileWriter.h"
+#include "IOutputStream.h"
 
-void Material::write(IFileWriter* writer) {
+void Material::write(IOutputStream* writer) {
   writer->writeString(effectFilePath_);
 
   writer->writeValue(parameters_.size());

@@ -1,11 +1,11 @@
 #ifndef JSONFILEWRITER_H_
 #define JSONFILEWRITER_H_
 
-#include "IFileWriter.h"
+#include "IOutputStream.h"
 
 #include <writer.h>
 
-class JSONFileWriter : public IFileWriter {
+class JSONFileWriter : public IOutputStream {
 
 public:
 

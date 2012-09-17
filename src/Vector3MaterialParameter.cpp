@@ -1,7 +1,7 @@
 #include "Vector3MaterialParameter.h"
 
-#include "IFileWriter.h"
+#include "IOutputStream.h"
 
-void Vector3MaterialParameter::write(IFileWriter* writer) {
+void Vector3MaterialParameter::write(IOutputStream* writer) {
   writer->writeKeyValue(name_, value);
 }

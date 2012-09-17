@@ -1,7 +1,7 @@
 #ifndef VERTEXDEFINITION_H_
 #define VERTEXDEFINITION_H_
 
-class IFileWriter;
+class IOutputStream;
 
 #include "Vector3.h"
 #include "Vector2.h"
@@ -10,7 +10,7 @@ class VertexDefinition {
 
 public:
 
-  void write(IFileWriter* writer);
+  void write(IOutputStream* writer);
 
 public:
 

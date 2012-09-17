@@ -11,11 +11,8 @@ int main(int argc, char **argv)  {
 
   char* outputFilename = argv[2];
 
-  IFileWriter* writer = IFileWriter::writeFile(outputFilename);
-
-  writer->openFile(outputFilename);
-  model->write(writer);
-  writer->close();
+  IFileWriter* writer = IFileWriter::writerForFile(outputFilename);
+  writer->writeModel(model, outputFilename);
 
   std::clog << "Finished" << std::endl;
 

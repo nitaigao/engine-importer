@@ -5,13 +5,13 @@
 
 #include "SubMesh.h"
 
-class IFileWriter;
+class IOutputStream;
 
 class Model {
 
 public:
 
-  void write(IFileWriter* writer);
+  void write(IOutputStream* writer);
 
   void addSubMesh(const SubMesh& submesh);
 

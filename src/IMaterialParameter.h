@@ -1,13 +1,13 @@
 #ifndef IMATERIALPARAMETER_H_
 #define IMATERIALPARAMETER_H_
 
-class IFileWriter;
+class IOutputStream;
 
 class IMaterialParameter {
 
 public:
 
-	virtual void write(IFileWriter* writer) = 0;
+	virtual void write(IOutputStream* writer) = 0;
 
 };
 

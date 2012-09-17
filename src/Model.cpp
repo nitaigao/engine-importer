@@ -1,8 +1,8 @@
 #include "Model.h"
 
-#include "IFileWriter.h"
+#include "IOutputStream.h"
 
-void Model::write(IFileWriter* writer) {
+void Model::write(IOutputStream* writer) {
   writer->writeValue(submeshes_.size());
   for (std::vector<SubMesh>::iterator i = submeshes_.begin(); i != submeshes_.end(); ++i) {
   	(*i).write(writer);

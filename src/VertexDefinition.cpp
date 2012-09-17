@@ -1,7 +1,7 @@
 #include "VertexDefinition.h"
 
-#include "IFileWriter.h"
+#include "IOutputStream.h"
 
-void VertexDefinition::write(IFileWriter* writer) {
+void VertexDefinition::write(IOutputStream* writer) {
   //writer->write((char*)this, sizeof(VertexDefinition));
 }

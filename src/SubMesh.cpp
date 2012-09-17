@@ -1,8 +1,8 @@
 #include "SubMesh.h"
 
-#include "IFileWriter.h"
+#include "IOutputStream.h"
 
-void SubMesh::write(IFileWriter* writer) {
+void SubMesh::write(IOutputStream* writer) {
   material_.write(writer);
 
   writer->writeVertexData(&vertices_[0], vertices_.size());

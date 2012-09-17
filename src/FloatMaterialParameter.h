@@ -14,7 +14,7 @@ public:
 
 public:
 
-  void write(IFileWriter* writer);
+  void write(IOutputStream* writer);
 
 private:
 

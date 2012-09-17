@@ -387,6 +387,14 @@
 			Name="Serialization"
 			>
 			<File
+				RelativePath=".\BinaryFileStream.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\BinaryFileStream.h"
+				>
+			</File>
+			<File
 				RelativePath=".\BinaryFileWriter.cpp"
 				>
 			</File>
@@ -408,6 +416,14 @@
 			</File>
 			<File
 				RelativePath=".\IFileWriter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\IOutputStream.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\IOutputStream.h"
 				>
 			</File>
 			<File

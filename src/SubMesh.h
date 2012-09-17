@@ -6,7 +6,7 @@
 #include "VertexDefinition.h"
 #include "Material.h"
 
-class IFileWriter;
+class IOutputStream;
 
 class SubMesh {
 
@@ -18,7 +18,7 @@ public:
 
 public:
 
-  void write(IFileWriter* writer);
+  void write(IOutputStream* writer);
 
 private:
 
