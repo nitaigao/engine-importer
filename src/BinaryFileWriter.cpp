@@ -13,15 +13,52 @@ enum {
   PARAMETER_TYPE_VECTOR3 = 3,
 };
 
+unsigned int swap_uint32( unsigned int val )
+{
+  val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF ); 
+  return (val << 16) | (val >> 16);
+}
+
 void BinaryFileWriter::openFile(const char* filePath) {
+  filePath_ = filePath;
   stream_.open(filePath, std::ofstream::binary);
 
   if (!stream_.is_open()) {
     std::cerr << "Failed to open file " << filePath << std::endl;
   }
+
+  unsigned int bigEndianOffset = 0;
+  stream_.write((char*)&bigEndianOffset, sizeof(unsigned int));
 }
 
 void BinaryFileWriter::close() {
+  unsigned int bigEndianOffset = stream_.tellp();
+  stream_.seekp(0);
+
+  stream_.write((char*)&bigEndianOffset, sizeof(unsigned int));
+  stream_.seekp(bigEndianOffset);
+
+  std::ifstream input;
+  input.open(filePath_.c_str(), std::ifstream::in | std::ios::binary);
+
+  if (!input.is_open()) {
+    std::cerr << "Failed to open file " << filePath_ << std::endl;
+  }
+
+  //seek past the offset marker
+  input.seekg(0);
+  input.seekg(sizeof(unsigned int));
+
+  unsigned int marker = 0;
+  while(marker < bigEndianOffset) {
+    unsigned int data = 0;
+    input.read((char*)&data, sizeof(unsigned int));
+
+    data = swap_uint32(data);
+    stream_.write((char*)&data, sizeof(unsigned int));
+    marker += sizeof(unsigned int);
+  }
+
   stream_.close();
 }
 
@@ -37,7 +74,7 @@ void BinaryFileWriter::writeVertexData(VertexDefinition* data, unsigned int size
 void BinaryFileWriter::writeString(const std::string& value) {
   unsigned int length = value.length() + 1;
   stream_.write((char*)&length, sizeof(unsigned int));
-  stream_.write(value.c_str(), value.length() * sizeof(char));
+  stream_.write(value.c_str(), value.size() * sizeof(char));
 
   char terminator = '\0';
   stream_.write((char*)&terminator, sizeof(char));
