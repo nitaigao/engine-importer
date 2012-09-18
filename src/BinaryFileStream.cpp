@@ -18,6 +18,13 @@ unsigned int swap_uint32(unsigned int val) {
   return (val << 16) | (val >> 16);
 }
 
+float swap_float(float x) {
+  unsigned int ui = *((unsigned int *)(void *)&x);
+  ui = swap_uint32(ui);
+
+  return *((float *)(void *)&ui);
+}
+
 void BinaryFileStream::writeValue(unsigned int value) {
   value = isBigEndian_ ? swap_uint32(value) : value;
   stream_->write((char*)&value, sizeof(unsigned int));
@@ -33,11 +40,8 @@ void BinaryFileStream::writeVertexData(VertexDefinition* data, unsigned int size
     float* bigEndianVertexDefData = new float[vertexDefDataSize];
 
     for (unsigned int i = 0; i < vertexDefDataSize; i++) {
-      unsigned int dataByte = 0;
       float vertexDef = vertexDefData[i];
-      memcpy(&dataByte, &vertexDef, sizeof(float));
-      dataByte = swap_uint32(dataByte);
-      memcpy(&vertexDef, &dataByte, sizeof(float));
+      vertexDef = swap_float(vertexDef);
       bigEndianVertexDefData[i] = vertexDef;
     }
 
@@ -75,6 +79,7 @@ void BinaryFileStream::writeKeyValue(const std::string& key, float value) {
   int valueType = isBigEndian_ ? swap_uint32(PARAMETER_TYPE_FLOAT) : PARAMETER_TYPE_FLOAT;
   stream_->write((char*)&valueType, sizeof(int));
 
+  value = isBigEndian_ ? swap_float(value) : value;
   stream_->write((char*)&value, sizeof(float));
 }
 
@@ -83,6 +88,16 @@ void BinaryFileStream::writeKeyValue(const std::string& key, const Vector3& valu
 
   int valueType = isBigEndian_ ? swap_uint32(PARAMETER_TYPE_VECTOR3) : PARAMETER_TYPE_VECTOR3;
   stream_->write((char*)&valueType, sizeof(int));
+
+  if (isBigEndian_) {
+    float* data = (float*)&value;
+
+    for (unsigned int i = 0; i < 3; i++) {
+      float littleEndian = data[i];
+      float bigEndian = swap_float(littleEndian);
+      data[i] = bigEndian;
+    }
+  }
 
   stream_->write((char*)&value, sizeof(Vector3));
 }
