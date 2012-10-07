@@ -29,6 +29,8 @@ public:
 
   void writeKeyValue(const std::string& key, const Vector3& value);
 
+  void writeKeyValueWithoutType(const std::string& key, const std::string& value);
+
 private:
 
   bool isBigEndian_;

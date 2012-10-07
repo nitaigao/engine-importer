@@ -25,6 +25,8 @@ public:
 
   virtual void writeKeyValue(const std::string& key, float value) = 0;
 
+  virtual void writeKeyValueWithoutType(const std::string& key, const std::string& value) = 0;
+
 };
 
 #endif

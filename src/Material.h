@@ -18,6 +18,8 @@ public:
 
   void addTexture(const std::string& key, const std::string& fileName);
 
+  bool hasTextures() const;
+
 public:
 
   void write(IOutputStream* writer);
@@ -42,6 +44,10 @@ inline void Material::addParameter(IMaterialParameter* parameter) {
 
 inline void Material::addTexture(const std::string& key, const std::string& fileName) {
   textures_[key] = fileName;
+}
+
+inline bool Material::hasTextures() const {
+  return textures_.size() > 0;
 }
 
 

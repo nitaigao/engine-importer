@@ -101,3 +101,8 @@ void BinaryFileStream::writeKeyValue(const std::string& key, const Vector3& valu
 
   stream_->write((char*)&value, sizeof(Vector3));
 }
+
+void BinaryFileStream::writeKeyValueWithoutType(const std::string& key, const std::string& value) {
+  writeString(key);
+  writeString(value);
+}

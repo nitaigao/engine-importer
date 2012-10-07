@@ -16,6 +16,6 @@ void Material::write(IOutputStream* writer) {
   writer->writeValue(textures_.size());
 
   for (std::map<std::string, std::string>::iterator i = textures_.begin(); i != textures_.end(); ++i) {
-  	writer->writeKeyValue((*i).first, (*i).second);
+  	writer->writeKeyValueWithoutType((*i).first, (*i).second);
   }
 }

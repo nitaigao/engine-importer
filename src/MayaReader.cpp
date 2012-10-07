@@ -70,6 +70,20 @@ inline float clamp(float x, float a, float b)
   return x < a ? a : (x > b ? b : x);
 }
 
+std::string extractAssetPath(const std::string fullAssetPath) {
+  std::string path = fullAssetPath;
+  std::string filename;
+
+  std::string assets("assets/");
+  size_t pos = path.rfind(assets);
+  if(pos != std::string::npos)
+    filename.assign(path.begin() + pos + assets.length(), path.end());
+  else
+    filename = path;
+
+  return filename;
+}
+
 void extractPolygons(Model* model) {
   MStatus stat;
   MItDag dagIter(MItDag::kBreadthFirst, MFn::kInvalid, &stat);
@@ -106,6 +120,14 @@ void extractPolygons(Model* model) {
     MObjectArray sets;
     MObjectArray comps;
     fnMesh.getConnectedSetsAndMembers( instanceNumber, sets, comps, true );
+
+    for(unsigned int i = 0; i < sets.length(); ++i)
+    {
+      MFnDependencyNode fnDepSGNode(sets[i]);
+      std::cout << fnDepSGNode.name() << std::endl;
+
+      
+    }
 
     unsigned int comlength = comps.length();
 
@@ -251,53 +273,62 @@ void extractPolygons(Model* model) {
       {
         Material material;
 
-        material.setEffect("cgfx/deferred_render_color_normal_depth.hlsl");
-
         {
           MObjectArray shaders;
           MIntArray indices;
           fnMesh.getConnectedShaders(0, shaders, indices);
-          for(unsigned int i = 0; i < shaders.length(); i++)
-          {
-            MPlugArray connections;
-            MFnDependencyNode shaderGroup(shaders[i]);
-            MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
-            shaderPlug.connectedTo(connections, true, false);
-            for(unsigned int u = 0; u < connections.length(); u++)
-            {
-              if(connections[u].node().hasFn(MFn::kLambert))
-              {
-                MPlugArray plugs;
-                MFnLambertShader lambertShader(connections[u].node());
-                lambertShader.findPlug("color").connectedTo(plugs, true, false);
+          unsigned int shaderCount = shaders.length();
 
-                for (unsigned int p = 0; p < plugs.length(); p++) {
-                  if (plugs[i].node().hasFn(MFn::kFileTexture)) {
-                    MFnDependencyNode* diffuseMapNode = new MFnDependencyNode(plugs[i].node());
+          MPlugArray connections;
+          MFnDependencyNode shaderGroup(shaders[compi]);
+          MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
+          shaderPlug.connectedTo(connections, true, false);
+
+          for(unsigned int u = 0; u < connections.length(); u++) {
+            if(connections[u].node().hasFn(MFn::kLambert)) {
+              
+              MFnLambertShader lambertShader(connections[u].node());
+              MPlugArray plugs;
+              lambertShader.findPlug("color").connectedTo(plugs, true, false);
+             
+              for (unsigned int p = 0; p < plugs.length(); p++) {
+                MPlug object = plugs[p];
+                if (!object.isNull()) {
+                  MObject node = object.node();
+                  if (node.hasFn(MFn::kFileTexture)) {
+                    MFnDependencyNode* diffuseMapNode = new MFnDependencyNode(node);
 
                     MPlug filenamePlug = diffuseMapNode->findPlug ("fileTextureName");
                     MString mayaFileName;
                     filenamePlug.getValue (mayaFileName);
                     std::string diffuseMapFileName = mayaFileName.asChar();
-
-                    material.addTexture("DiffuseColor", diffuseMapFileName);
-
-                    // do something with the texture
+                    std::string diffuseMapAssetPath = extractAssetPath(diffuseMapFileName);
+                    material.addTexture("ColorMap", diffuseMapAssetPath);
                   }
-                }
-
-                MColor color = lambertShader.color();
-
-                Vector3MaterialParameter* diffuseColorParameter = new Vector3MaterialParameter("DiffuseColor");
-                diffuseColorParameter->value.x = color.r;
-                diffuseColorParameter->value.y = color.g;
-                diffuseColorParameter->value.z = color.b;
-
-                material.addParameter(diffuseColorParameter);
+                } 
               }
+
+              MColor color = lambertShader.color();
+
+              Vector3MaterialParameter* diffuseColorParameter = new Vector3MaterialParameter("DiffuseColor");
+              diffuseColorParameter->value.x = color.r;
+              diffuseColorParameter->value.y = color.g;
+              diffuseColorParameter->value.z = color.b;
+
+              material.addParameter(diffuseColorParameter);
             }
           }
         }
+
+        {
+          if (material.hasTextures()) {
+            material.setEffect("shaders/compiled/deferred_render_colormap_normal_depth.shader");
+          }
+          else {
+            material.setEffect("shaders/compiled/deferred_render_color_normal_depth.shader");
+          }
+        }
+     
 
         {
           FloatMaterialParameter* specularPowerParameter = new FloatMaterialParameter("SpecularPower");
