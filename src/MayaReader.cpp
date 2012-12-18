@@ -125,8 +125,6 @@ void extractPolygons(Model* model) {
     {
       MFnDependencyNode fnDepSGNode(sets[i]);
       std::cout << fnDepSGNode.name() << std::endl;
-
-      
     }
 
     unsigned int comlength = comps.length();

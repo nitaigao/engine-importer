@@ -11,8 +11,14 @@ public:
 
 	Model* read(const char* filename);
 
-  bool acceptExtension(const std::string& extension);
+	bool acceptExtension(const std::string& extension);
+
+	std::string type() const;
 
 };
+
+inline std::string MayaReader::type() const {
+	return "Maya Binary/ASCII";
+}
 
 #endif

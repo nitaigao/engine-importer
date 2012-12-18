@@ -13,9 +13,11 @@ public:
 
   virtual bool acceptExtension(const std::string& extension) = 0;
 
+  virtual std::string type() const = 0;
+
 public:
 
-  static Model* readFile(const std::string& inputFilename);
+  static IFileReader* readerForFile(const std::string& inputFilename);
 
 };
 

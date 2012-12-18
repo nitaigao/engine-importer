@@ -19,6 +19,12 @@ public:
 
   void writeModel(Model* model, const std::string& outputFilename);
 
+  std::string BinaryFileWriter::type() const;
+
 };
+
+inline std::string BinaryFileWriter::type() const {
+	return "Binary";
+}
 
 #endif

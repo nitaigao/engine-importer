@@ -11,6 +11,12 @@ public:
 
   Model* read(const char* filename);
 
+  std::string type() const;
+
 };
+
+inline std::string DefaultFileReader::type() const {
+	return "Default";
+}
 
 #endif

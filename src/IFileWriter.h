@@ -17,6 +17,8 @@ public:
   
   virtual void writeModel(Model* model, const std::string& outputFilename) = 0;
 
+  virtual std::string type() const = 0;
+
 };
 
 #endif

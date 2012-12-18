@@ -11,6 +11,12 @@ public:
 
   bool acceptExtension(const std::string& extension);
 
+  std::string DefaultFileWriter::type() const;
+
 };
+
+inline std::string DefaultFileWriter::type() const {
+	return "Default";
+}
 
 #endif

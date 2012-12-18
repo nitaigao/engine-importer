@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 
 #include "Model.h"
 #include "IFileReader.h"
@@ -7,14 +8,27 @@
 int main(int argc, char **argv)  {
   char* inputFilename = argv[1];
 
-  Model* model = IFileReader::readFile(inputFilename);
+  std::ifstream inputFile(inputFilename);
+  if (!inputFile.is_open()) {
+	  std::cerr << "Failed to open file " << inputFilename << std::endl;
+	  return -1;
+  }
+
+  IFileReader* reader = IFileReader::readerForFile(inputFilename);
+  std::clog << "Selected reader of type: " << reader->type() << std::endl;
+  Model* model = reader->read(inputFilename);
 
   char* outputFilename = argv[2];
 
   IFileWriter* writer = IFileWriter::writerForFile(outputFilename);
+  std::clog << "Selected writer of type: " << writer->type() << std::endl;
   writer->writeModel(model, outputFilename);
 
   std::clog << "Finished" << std::endl;
 
+  if (argc >= 3) {
+	system("pause");
+  }
+	
   return 0;
 }

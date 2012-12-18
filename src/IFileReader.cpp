@@ -4,7 +4,7 @@
 #include "DefaultFileReader.h"
 #include "Extension.h"
 
-Model* IFileReader::readFile(const std::string& inputFilename) {
+IFileReader* IFileReader::readerForFile(const std::string& inputFilename) {
   std::string fileExtension = extension(inputFilename);
 
   std::vector<IFileReader*> readers;
@@ -14,11 +14,9 @@ Model* IFileReader::readFile(const std::string& inputFilename) {
   IFileReader* reader = NULL;
   for (std::vector<IFileReader*>::iterator i = readers.begin(); i != readers.end(); ++i) {
     if ((*i)->acceptExtension(fileExtension)) {
-      reader = (*i);
-      break;
+      return (*i);
     }
   }
 
-  Model* model = reader->read(inputFilename.c_str());
-  return model;
+  return NULL;
 }
