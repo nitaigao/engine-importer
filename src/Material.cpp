@@ -5,6 +5,7 @@
 #include "IOutputStream.h"
 
 void Material::write(IOutputStream* writer) {
+  writer->writeString(name_);
   writer->writeString(effectFilePath_);
 
   writer->writeValue(parameters_.size());

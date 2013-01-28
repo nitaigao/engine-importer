@@ -307,6 +307,9 @@ void extractPolygons(Model* model) {
               }
 
               MColor color = lambertShader.color();
+              MString materialNameRaw = lambertShader.name();
+              std::string materialName = materialNameRaw.asChar();
+              material.setName(materialName);
 
               Vector3MaterialParameter* diffuseColorParameter = new Vector3MaterialParameter("DiffuseColor");
               diffuseColorParameter->value.x = color.r;

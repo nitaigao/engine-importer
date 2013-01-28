@@ -18,6 +18,8 @@ public:
 
   void addTexture(const std::string& key, const std::string& fileName);
 
+  void setName(const std::string& name);
+
   bool hasTextures() const;
 
 public:
@@ -26,6 +28,8 @@ public:
 
 private:
 
+  std::string name_;
+
   std::string effectFilePath_;
 
   std::vector<IMaterialParameter*> parameters_;
@@ -33,6 +37,10 @@ private:
   std::map<std::string, std::string> textures_;
 
 };
+
+inline void Material::setName(const std::string& name) {
+  name_ = name;
+}
 
 inline void Material::setEffect(const std::string& effectFilePathRelative) {
   effectFilePath_ = effectFilePathRelative;
