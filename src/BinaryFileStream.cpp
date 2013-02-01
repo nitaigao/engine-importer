@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "Vector3.h"
+
 #include "VertexDefinition.h"
 
 enum {
@@ -11,6 +11,7 @@ enum {
   PARAMETER_TYPE_STRING = 1,
   PARAMETER_TYPE_FLOAT = 2,
   PARAMETER_TYPE_VECTOR3 = 3,
+  PARAMETER_TYPE_VECTOR4 = 4,
 };
 
 unsigned int swap_uint32(unsigned int val) {
@@ -100,6 +101,25 @@ void BinaryFileStream::writeKeyValue(const std::string& key, const Vector3& valu
   }
 
   stream_->write((char*)&value, sizeof(Vector3));
+}
+
+void BinaryFileStream::writeKeyValue(const std::string& key, const Vector4& value) {
+  writeString(key);
+
+  int valueType = isBigEndian_ ? swap_uint32(PARAMETER_TYPE_VECTOR4) : PARAMETER_TYPE_VECTOR4;
+  stream_->write((char*)&valueType, sizeof(int));
+
+  if (isBigEndian_) {
+    float* data = (float*)&value;
+
+    for (unsigned int i = 0; i < 4; i++) {
+      float littleEndian = data[i];
+      float bigEndian = swap_float(littleEndian);
+      data[i] = bigEndian;
+    }
+  }
+
+  stream_->write((char*)&value, sizeof(Vector4));
 }
 
 void BinaryFileStream::writeKeyValueWithoutType(const std::string& key, const std::string& value) {

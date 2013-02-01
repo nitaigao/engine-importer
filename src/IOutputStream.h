@@ -3,6 +3,7 @@
 
 class SubMesh;
 class Vector3;
+class Vector4;
 class Material;
 class VertexDefinition;
 
@@ -20,6 +21,8 @@ public:
   virtual void writeString(const std::string& value) = 0;
 
   virtual void writeKeyValue(const std::string& key, const Vector3& value) = 0;
+
+  virtual void writeKeyValue(const std::string& key, const Vector4& value) = 0;
 
   virtual void writeKeyValue(const std::string& key, const std::string& value) = 0;
 

@@ -37,6 +37,7 @@
 #include "SubMesh.h"
 #include "Material.h"
 #include "Vector3MaterialParameter.h"
+#include "Vector4MaterialParameter.h"
 #include "FloatMaterialParameter.h"
 
 MIntArray GetLocalIndex( MIntArray & getVertices, MIntArray & getTriangle )
@@ -311,10 +312,11 @@ void extractPolygons(Model* model) {
               std::string materialName = materialNameRaw.asChar();
               material.setName(materialName);
 
-              Vector3MaterialParameter* diffuseColorParameter = new Vector3MaterialParameter("DiffuseColor");
+              Vector4MaterialParameter* diffuseColorParameter = new Vector4MaterialParameter("DiffuseColor");
               diffuseColorParameter->value.x = color.r;
               diffuseColorParameter->value.y = color.g;
               diffuseColorParameter->value.z = color.b;
+              diffuseColorParameter->value.w = color.a;
 
               material.addParameter(diffuseColorParameter);
             }

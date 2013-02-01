@@ -1,9 +1,12 @@
 #ifndef BINARYFILESTREAM_H_
 #define BINARYFILESTREAM_H_
 
+#include <fstream>
+
 #include "IOutputStream.h"
 
-#include <fstream>
+#include "Vector3.h"
+#include "Vector4.h"
 
 class BinaryFileStream : public IOutputStream {
 
@@ -28,6 +31,8 @@ public:
   void writeKeyValue(const std::string& key, float value);
 
   void writeKeyValue(const std::string& key, const Vector3& value);
+
+  void writeKeyValue(const std::string& key, const Vector4& value);
 
   void writeKeyValueWithoutType(const std::string& key, const std::string& value);
 

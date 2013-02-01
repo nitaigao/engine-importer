@@ -177,6 +177,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="SubMesh.cpp" />
     <ClCompile Include="Vector3MaterialParameter.cpp" />
+    <ClCompile Include="Vector4MaterialParameter.cpp" />
     <ClCompile Include="VertexDefinition.cpp" />
     <ClCompile Include="BinaryFileStream.cpp" />
     <ClCompile Include="BinaryFileWriter.cpp" />
@@ -199,6 +200,8 @@
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="Vector3MaterialParameter.h" />
+    <ClInclude Include="Vector4.h" />
+    <ClInclude Include="Vector4MaterialParameter.h" />
     <ClInclude Include="VertexDefinition.h" />
     <ClInclude Include="BinaryFileStream.h" />
     <ClInclude Include="BinaryFileWriter.h" />

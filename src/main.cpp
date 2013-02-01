@@ -26,9 +26,9 @@ int main(int argc, char **argv)  {
 
   std::clog << "Finished" << std::endl;
 
-  if (argc >= 3) {
+#ifdef DEBUG
 	system("pause");
-  }
+#endif
 	
   return 0;
 }
