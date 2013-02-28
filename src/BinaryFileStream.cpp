@@ -2,7 +2,7 @@
 
 #include <fstream>
 #include <iostream>
-
+#include <stdint.h>
 
 #include "VertexDefinition.h"
 
@@ -28,7 +28,7 @@ float swap_float(float x) {
 
 void BinaryFileStream::writeValue(unsigned int value) {
   value = isBigEndian_ ? swap_uint32(value) : value;
-  stream_->write((char*)&value, sizeof(unsigned int));
+  stream_->write((char*)&value, sizeof(int32_t));
 }
 
 void BinaryFileStream::writeVertexData(VertexDefinition* data, unsigned int size) {
@@ -69,7 +69,7 @@ void BinaryFileStream::writeKeyValue(const std::string& key, const std::string& 
   writeString(key);
 
   int valueType = isBigEndian_ ? swap_uint32(PARAMETER_TYPE_STRING) : PARAMETER_TYPE_STRING;
-  stream_->write((char*)&valueType, sizeof(int));
+  stream_->write((char*)&valueType, sizeof(int32_t));
 
   writeString(value);
 }
@@ -78,7 +78,7 @@ void BinaryFileStream::writeKeyValue(const std::string& key, float value) {
   writeString(key);
 
   int valueType = isBigEndian_ ? swap_uint32(PARAMETER_TYPE_FLOAT) : PARAMETER_TYPE_FLOAT;
-  stream_->write((char*)&valueType, sizeof(int));
+  stream_->write((char*)&valueType, sizeof(int32_t));
 
   value = isBigEndian_ ? swap_float(value) : value;
   stream_->write((char*)&value, sizeof(float));
@@ -88,7 +88,7 @@ void BinaryFileStream::writeKeyValue(const std::string& key, const Vector3& valu
   writeString(key);
 
   int valueType = isBigEndian_ ? swap_uint32(PARAMETER_TYPE_VECTOR3) : PARAMETER_TYPE_VECTOR3;
-  stream_->write((char*)&valueType, sizeof(int));
+  stream_->write((char*)&valueType, sizeof(int32_t));
 
   if (isBigEndian_) {
     float* data = (float*)&value;
@@ -107,7 +107,7 @@ void BinaryFileStream::writeKeyValue(const std::string& key, const Vector4& valu
   writeString(key);
 
   int valueType = isBigEndian_ ? swap_uint32(PARAMETER_TYPE_VECTOR4) : PARAMETER_TYPE_VECTOR4;
-  stream_->write((char*)&valueType, sizeof(int));
+  stream_->write((char*)&valueType, sizeof(int32_t));
 
   if (isBigEndian_) {
     float* data = (float*)&value;

@@ -6,6 +6,7 @@
 #include "IFileWriter.h"
 
 int main(int argc, char **argv)  {
+	int a = sizeof(unsigned int);
   char* inputFilename = argv[1];
 
   std::ifstream inputFile(inputFilename);
@@ -26,7 +27,7 @@ int main(int argc, char **argv)  {
 
   std::clog << "Finished" << std::endl;
 
-#ifdef DEBUG
+#ifdef _DEBUG
 	system("pause");
 #endif
 	

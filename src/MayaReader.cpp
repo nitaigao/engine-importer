@@ -161,33 +161,33 @@ void extractPolygons(Model* model) {
 
             { // vertices
 
-              MInt64 vertexCount = vertexList.length();
+              int vertexCount = vertexList.length();
 
               {
-                MInt64 vertexIndex0 = triangleVertices[0];
+                int vertexIndex0 = triangleVertices[0];
                 MPoint point0 = vertexList[vertexIndex0];
 
-                vertex1.vertex.x = point0.x;
-                vertex1.vertex.y = point0.y;
-                vertex1.vertex.z = point0.z;
+                vertex1.vertex.x = (float)point0.x;
+                vertex1.vertex.y = (float)point0.y;
+                vertex1.vertex.z = (float)point0.z;
               }
 
               {
-                MInt64 vertexIndex0 = triangleVertices[1];
+                int vertexIndex0 = triangleVertices[1];
                 MPoint point0 = vertexList[vertexIndex0];
 
-                vertex2.vertex.x = point0.x;
-                vertex2.vertex.y = point0.y;
-                vertex2.vertex.z = point0.z;
+                vertex2.vertex.x = (float)point0.x;
+                vertex2.vertex.y = (float)point0.y;
+                vertex2.vertex.z = (float)point0.z;
               }
 
               {
-                MInt64 vertexIndex0 = triangleVertices[2];
+                int vertexIndex0 = triangleVertices[2];
                 MPoint point0 = vertexList[vertexIndex0];
 
-                vertex3.vertex.x = point0.x;
-                vertex3.vertex.y = point0.y;
-                vertex3.vertex.z = point0.z;
+                vertex3.vertex.x = (float)point0.x;
+                vertex3.vertex.y = (float)point0.y;
+                vertex3.vertex.z = (float)point0.z;
               }
 
             }
@@ -198,69 +198,72 @@ void extractPolygons(Model* model) {
               localIndex = GetLocalIndex(polygonVertices, triangleVertices);
 
               {
-                MInt64 index0 = itPolygon.normalIndex(localIndex[0]);
+                int index0 = itPolygon.normalIndex(localIndex[0]);
                 MPoint point0 = meshNormals[index0];
 
-                vertex1.normal.x = point0.x;
-                vertex1.normal.y = point0.y;
-                vertex1.normal.z = point0.z;
+                vertex1.normal.x = (float)point0.x;
+                vertex1.normal.y = (float)point0.y;
+                vertex1.normal.z = (float)point0.z;
               }
 
               {
-                MInt64 index0 = itPolygon.normalIndex(localIndex[1]);
+                int index0 = itPolygon.normalIndex(localIndex[1]);
                 MPoint point0 = meshNormals[index0];
 
-                vertex2.normal.x = point0.x;
-                vertex2.normal.y = point0.y;
-                vertex2.normal.z = point0.z;
+                vertex2.normal.x = (float)point0.x;
+                vertex2.normal.y = (float)point0.y;
+                vertex2.normal.z = (float)point0.z;
               }
 
               {
-                MInt64 index0 = itPolygon.normalIndex(localIndex[2]);
+                int index0 = itPolygon.normalIndex(localIndex[2]);
                 MPoint point0 = meshNormals[index0];
 
-                vertex3.normal.x = point0.x;
-                vertex3.normal.y = point0.y;
-                vertex3.normal.z = point0.z;
+                vertex3.normal.x = (float)point0.x;
+                vertex3.normal.y = (float)point0.y;
+                vertex3.normal.z = (float)point0.z;
               }
             }
 
-            { // uvs
+             { // uvs
 
               int uvID[3];
 
+							MStatus uvFetchStatus;
               for (unsigned int vtxInPolygon = 0; vtxInPolygon < 3; vtxInPolygon++) {
-                itPolygon.getUVIndex(localIndex[vtxInPolygon], uvID[vtxInPolygon]);
+                uvFetchStatus = itPolygon.getUVIndex(localIndex[vtxInPolygon], uvID[vtxInPolygon]);
               }
 
+							if (uvFetchStatus == MStatus::kSuccess) {
 
-              {
-                MInt64 index0 = uvID[0];
-                float uvu = u[index0];
-                float uvv = v[index0];
+								{
+									int index0 = uvID[0];
+									float uvu = u[index0];
+									float uvv = v[index0];
 
-                vertex1.uv.x = uvu;
-                vertex1.uv.y = 1.0f - uvv;
-              }
+									vertex1.uv.x = uvu;
+									vertex1.uv.y = 1.0f - uvv;
+								}
 
-              {
-                MInt64 index0 = uvID[1];
-                float uvu = u[index0];
-                float uvv = v[index0];
+								{
+									int index0 = uvID[1];
+									float uvu = u[index0];
+									float uvv = v[index0];
 
-                vertex2.uv.x = uvu;
-                vertex2.uv.y = 1.0f - uvv;
-              }
+									vertex2.uv.x = uvu;
+									vertex2.uv.y = 1.0f - uvv;
+								}
 
-              {
-                MInt64 index0 = uvID[2];
-                float uvu = u[index0];
-                float uvv = v[index0];
+								{
+									int index0 = uvID[2];
+									float uvu = u[index0];
+									float uvv = v[index0];
 
-                vertex3.uv.x = uvu;
-                vertex3.uv.y = 1.0f - uvv; // directx
-              }
-            }
+									vertex3.uv.x = uvu;
+									vertex3.uv.y = 1.0f - uvv; // directx
+								}
+							}
+						}
 
             submesh.addVertex(vertex1);
             submesh.addVertex(vertex2);
