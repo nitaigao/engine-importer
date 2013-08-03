@@ -328,10 +328,10 @@ void extractPolygons(Model* model) {
 
         {
           if (material.hasTextures()) {
-            material.setEffect("shaders/compiled/deferred_render_colormap_normal_depth.shader");
+            material.setEffect("shaders/deferred_render_colormap_normal_depth.cg");
           }
           else {
-            material.setEffect("shaders/compiled/deferred_render_color_normal_depth.shader");
+            material.setEffect("shaders/deferred_render_color_normal_depth.cg");
           }
         }
      
