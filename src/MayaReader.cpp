@@ -42,197 +42,211 @@
 
 MIntArray GetLocalIndex( MIntArray & getVertices, MIntArray & getTriangle )
 {
-  MIntArray   localIndex;
-  unsigned    gv, gt;
+	MIntArray   localIndex;
+	unsigned    gv, gt;
 
-  assert ( getTriangle.length() == 3 );    // Should always deal with a triangle
+	assert ( getTriangle.length() == 3 );    // Should always deal with a triangle
 
-  for ( gt = 0; gt < getTriangle.length(); gt++ )
-  {
-    for ( gv = 0; gv < getVertices.length(); gv++ )
-    {
-      if ( getTriangle[gt] == getVertices[gv] )
-      {
-        localIndex.append( gv );
-        break;
-      }
-    }
+	for ( gt = 0; gt < getTriangle.length(); gt++ )
+	{
+		for ( gv = 0; gv < getVertices.length(); gv++ )
+		{
+			if ( getTriangle[gt] == getVertices[gv] )
+			{
+				localIndex.append( gv );
+				break;
+			}
+		}
 
-    // if nothing was added, add default "no match"
-    if ( localIndex.length() == gt )
-      localIndex.append( -1 );
-  }
+		// if nothing was added, add default "no match"
+		if ( localIndex.length() == gt )
+			localIndex.append( -1 );
+	}
 
-  return localIndex;
+	return localIndex;
 }
 
 inline float clamp(float x, float a, float b)
 {
-  return x < a ? a : (x > b ? b : x);
+	return x < a ? a : (x > b ? b : x);
 }
 
 std::string extractAssetPath(const std::string fullAssetPath) {
-  std::string path = fullAssetPath;
-  std::string filename;
+	std::string path = fullAssetPath;
+	std::string filename;
 
-  std::string assets("assets/");
-  size_t pos = path.rfind(assets);
-  if(pos != std::string::npos)
-    filename.assign(path.begin() + pos + assets.length(), path.end());
-  else
-    filename = path;
+	std::string assets("assets/");
+	size_t pos = path.rfind(assets);
+	if(pos != std::string::npos)
+		filename.assign(path.begin() + pos + assets.length(), path.end());
+	else
+		filename = path;
 
-  return filename;
+	return filename;
+}
+
+
+void printMaterials(const MDagPath& dagPath) {
+	MFnMesh fnMesh(dagPath);
+	unsigned instanceNumber = dagPath.instanceNumber();
+	MObjectArray sets;
+	MObjectArray comps;
+	fnMesh.getConnectedSetsAndMembers( instanceNumber, sets, comps, true );
+
+	// Print Material Names
+	for(unsigned int i = 0; i < sets.length(); ++i)
+	{
+		MFnDependencyNode fnDepSGNode(sets[i]);
+		std::cout << fnDepSGNode.name() << std::endl;
+	}
 }
 
 void extractPolygons(Model* model) {
-  MStatus stat;
-  MItDag dagIter(MItDag::kBreadthFirst, MFn::kInvalid, &stat);
 
-  for (; !dagIter.isDone(); dagIter.next()) {
-    MDagPath dagPath;
-    stat = dagIter.getPath(dagPath);
-    if (!stat) { continue; };
+	MStatus stat;
+	MItDag dagIter(MItDag::kBreadthFirst, MFn::kInvalid);
 
-    MFnDagNode dagNode(dagPath, &stat);
+	for (; !dagIter.isDone(); dagIter.next()) {
+		MDagPath dagPath;
+		stat = dagIter.getPath(dagPath);
+		if (!stat) { continue; };
 
-    if (dagNode.isIntermediateObject()) continue;
-    if (!dagPath.hasFn( MFn::kMesh )) continue;
-    if (dagPath.hasFn( MFn::kTransform)) continue;
+		MFnDagNode dagNode(dagPath, &stat);
 
-    MFnMesh fnMesh(dagPath);
+		if (dagNode.isIntermediateObject()) continue;
+		if (!dagPath.hasFn( MFn::kMesh )) continue;
+		if (dagPath.hasFn( MFn::kTransform)) continue;
+		if (!dagPath.isVisible()) continue;
 
-    MStringArray  UVSets;
-    stat = fnMesh.getUVSetNames( UVSets );
+		MFnMesh fnMesh(dagPath);
 
-    // Get all UVs for the first UV set.
-    MFloatArray   u, v;
-    fnMesh.getUVs(u, v, &UVSets[0]);
+		MStringArray  UVSets;
+		stat = fnMesh.getUVSetNames( UVSets );
 
-
-    MPointArray vertexList;
-    fnMesh.getPoints(vertexList, MSpace::kObject);
-
-    MFloatVectorArray  meshNormals;
-    fnMesh.getNormals(meshNormals);
+		// Get all UVs for the first UV set.
+		MFloatArray   u, v;
+		fnMesh.getUVs(u, v, &UVSets[0]);
 
 
-    unsigned instanceNumber = dagPath.instanceNumber();
-    MObjectArray sets;
-    MObjectArray comps;
-    fnMesh.getConnectedSetsAndMembers( instanceNumber, sets, comps, true );
+		MPointArray vertexList;
+		fnMesh.getPoints(vertexList, MSpace::kObject);
 
-    for(unsigned int i = 0; i < sets.length(); ++i)
-    {
-      MFnDependencyNode fnDepSGNode(sets[i]);
-      std::cout << fnDepSGNode.name() << std::endl;
-    }
+		MFloatVectorArray  meshNormals;
+		fnMesh.getNormals(meshNormals);
 
-    unsigned int comlength = comps.length();
 
-    for (unsigned int compi = 0; compi < comlength; compi++) {
+		unsigned instanceNumber = dagPath.instanceNumber();
+		MObjectArray sets;
+		MObjectArray comps;
+		fnMesh.getConnectedSetsAndMembers( instanceNumber, sets, comps, true );
 
-      SubMesh submesh;
+		//printMaterials(dagPath);
 
-      MItMeshPolygon itPolygon(dagPath, comps[compi]);
+		unsigned int comlength = comps.length();
 
-      unsigned int polyCount = 0;
-      for (; !itPolygon.isDone(); itPolygon.next()) {
-        polyCount++;
-        MIntArray                           polygonVertices;
-        itPolygon.getVertices(polygonVertices);
+		for (unsigned int compi = 0; compi < comlength; compi++) {
 
-        int count;
-        itPolygon.numTriangles(count);
+			SubMesh submesh;
 
-        for (; count > -1; count--) {
-          MPointArray                     nonTweaked;
-          MIntArray                       triangleVertices;
-          MIntArray                       localIndex;
+			MItMeshPolygon itPolygon(dagPath, comps[compi]);
 
-          MStatus  status;
-          status = itPolygon.getTriangle(count, nonTweaked, triangleVertices, MSpace::kObject);
+			unsigned int polyCount = 0;
+			for (; !itPolygon.isDone(); itPolygon.next()) {
+				polyCount++;
+				MIntArray                           polygonVertices;
+				itPolygon.getVertices(polygonVertices);
 
-          if (status == MS::kSuccess) {
+				int count;
+				itPolygon.numTriangles(count);
 
-            VertexDefinition vertex1;
-            VertexDefinition vertex2;
-            VertexDefinition vertex3;
+				for (; count > -1; count--) {
+					MPointArray                     nonTweaked;
+					MIntArray                       triangleVertices;
+					MIntArray                       localIndex;
 
-            { // vertices
+					MStatus  status;
+					status = itPolygon.getTriangle(count, nonTweaked, triangleVertices, MSpace::kObject);
 
-              int vertexCount = vertexList.length();
+					if (status == MS::kSuccess) {
 
-              {
-                int vertexIndex0 = triangleVertices[0];
-                MPoint point0 = vertexList[vertexIndex0];
+						VertexDefinition vertex1;
+						VertexDefinition vertex2;
+						VertexDefinition vertex3;
 
-                vertex1.vertex.x = (float)point0.x;
-                vertex1.vertex.y = (float)point0.y;
-                vertex1.vertex.z = (float)point0.z;
-              }
+						{ // vertices
 
-              {
-                int vertexIndex0 = triangleVertices[1];
-                MPoint point0 = vertexList[vertexIndex0];
+							int vertexCount = vertexList.length();
 
-                vertex2.vertex.x = (float)point0.x;
-                vertex2.vertex.y = (float)point0.y;
-                vertex2.vertex.z = (float)point0.z;
-              }
+							{
+								int vertexIndex0 = triangleVertices[0];
+								MPoint point0 = vertexList[vertexIndex0];
 
-              {
-                int vertexIndex0 = triangleVertices[2];
-                MPoint point0 = vertexList[vertexIndex0];
+								vertex1.vertex.x = (float)point0.x;
+								vertex1.vertex.y = (float)point0.y;
+								vertex1.vertex.z = (float)point0.z;
+							}
 
-                vertex3.vertex.x = (float)point0.x;
-                vertex3.vertex.y = (float)point0.y;
-                vertex3.vertex.z = (float)point0.z;
-              }
+							{
+								int vertexIndex0 = triangleVertices[1];
+								MPoint point0 = vertexList[vertexIndex0];
 
-            }
+								vertex2.vertex.x = (float)point0.x;
+								vertex2.vertex.y = (float)point0.y;
+								vertex2.vertex.z = (float)point0.z;
+							}
 
-            { // normals
+							{
+								int vertexIndex0 = triangleVertices[2];
+								MPoint point0 = vertexList[vertexIndex0];
 
-              // Get face-relative vertex indices for this triangle
-              localIndex = GetLocalIndex(polygonVertices, triangleVertices);
+								vertex3.vertex.x = (float)point0.x;
+								vertex3.vertex.y = (float)point0.y;
+								vertex3.vertex.z = (float)point0.z;
+							}
 
-              {
-                int index0 = itPolygon.normalIndex(localIndex[0]);
-                MPoint point0 = meshNormals[index0];
+						}
 
-                vertex1.normal.x = (float)point0.x;
-                vertex1.normal.y = (float)point0.y;
-                vertex1.normal.z = (float)point0.z;
-              }
+						{ // normals
 
-              {
-                int index0 = itPolygon.normalIndex(localIndex[1]);
-                MPoint point0 = meshNormals[index0];
+							// Get face-relative vertex indices for this triangle
+							localIndex = GetLocalIndex(polygonVertices, triangleVertices);
 
-                vertex2.normal.x = (float)point0.x;
-                vertex2.normal.y = (float)point0.y;
-                vertex2.normal.z = (float)point0.z;
-              }
+							{
+								int index0 = itPolygon.normalIndex(localIndex[0]);
+								MPoint point0 = meshNormals[index0];
 
-              {
-                int index0 = itPolygon.normalIndex(localIndex[2]);
-                MPoint point0 = meshNormals[index0];
+								vertex1.normal.x = (float)point0.x;
+								vertex1.normal.y = (float)point0.y;
+								vertex1.normal.z = (float)point0.z;
+							}
 
-                vertex3.normal.x = (float)point0.x;
-                vertex3.normal.y = (float)point0.y;
-                vertex3.normal.z = (float)point0.z;
-              }
-            }
+							{
+								int index0 = itPolygon.normalIndex(localIndex[1]);
+								MPoint point0 = meshNormals[index0];
 
-             { // uvs
+								vertex2.normal.x = (float)point0.x;
+								vertex2.normal.y = (float)point0.y;
+								vertex2.normal.z = (float)point0.z;
+							}
 
-              int uvID[3];
+							{
+								int index0 = itPolygon.normalIndex(localIndex[2]);
+								MPoint point0 = meshNormals[index0];
+
+								vertex3.normal.x = (float)point0.x;
+								vertex3.normal.y = (float)point0.y;
+								vertex3.normal.z = (float)point0.z;
+							}
+						}
+
+						{ // uvs
+
+							int uvID[3];
 
 							MStatus uvFetchStatus;
-              for (unsigned int vtxInPolygon = 0; vtxInPolygon < 3; vtxInPolygon++) {
-                uvFetchStatus = itPolygon.getUVIndex(localIndex[vtxInPolygon], uvID[vtxInPolygon]);
-              }
+							for (unsigned int vtxInPolygon = 0; vtxInPolygon < 3; vtxInPolygon++) {
+								uvFetchStatus = itPolygon.getUVIndex(localIndex[vtxInPolygon], uvID[vtxInPolygon]);
+							}
 
 							if (uvFetchStatus == MStatus::kSuccess) {
 
@@ -265,135 +279,138 @@ void extractPolygons(Model* model) {
 							}
 						}
 
-            submesh.addVertex(vertex1);
-            submesh.addVertex(vertex2);
-            submesh.addVertex(vertex3);
-          }
-        }
-      }
+						submesh.addVertex(vertex1);
+						submesh.addVertex(vertex2);
+						submesh.addVertex(vertex3);
+					}
+				}
+			}
 
-      {
-        Material material;
+			{
+				Material material;
 
-        {
-          MObjectArray shaders;
-          MIntArray indices;
-          fnMesh.getConnectedShaders(0, shaders, indices);
-          unsigned int shaderCount = shaders.length();
+				{
+					MObjectArray shaders;
+					MIntArray indices;
+					fnMesh.getConnectedShaders(0, shaders, indices);
+					unsigned int shaderCount = shaders.length();
 
-          MPlugArray connections;
-          MFnDependencyNode shaderGroup(shaders[compi]);
-          MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
-          shaderPlug.connectedTo(connections, true, false);
+					MPlugArray connections;
+					MFnDependencyNode shaderGroup(shaders[compi]);
+					MPlug shaderPlug = shaderGroup.findPlug("surfaceShader");
+					shaderPlug.connectedTo(connections, true, false);
 
-          for(unsigned int u = 0; u < connections.length(); u++) {
-            if(connections[u].node().hasFn(MFn::kLambert)) {
-              
-              MFnLambertShader lambertShader(connections[u].node());
-              MPlugArray plugs;
-              lambertShader.findPlug("color").connectedTo(plugs, true, false);
-             
-              for (unsigned int p = 0; p < plugs.length(); p++) {
-                MPlug object = plugs[p];
-                if (!object.isNull()) {
-                  MObject node = object.node();
-                  if (node.hasFn(MFn::kFileTexture)) {
-                    MFnDependencyNode* diffuseMapNode = new MFnDependencyNode(node);
+					for(unsigned int u = 0; u < connections.length(); u++) {
+						if(connections[u].node().hasFn(MFn::kLambert)) {
 
-                    MPlug filenamePlug = diffuseMapNode->findPlug ("fileTextureName");
-                    MString mayaFileName;
-                    filenamePlug.getValue (mayaFileName);
-                    std::string diffuseMapFileName = mayaFileName.asChar();
-                    std::string diffuseMapAssetPath = extractAssetPath(diffuseMapFileName);
-                    material.addTexture("ColorMap", diffuseMapAssetPath);
-                  }
-                } 
-              }
+							MFnLambertShader lambertShader(connections[u].node());
+							MPlugArray plugs;
+							lambertShader.findPlug("color").connectedTo(plugs, true, false);
 
-              MColor color = lambertShader.color();
-              MString materialNameRaw = lambertShader.name();
-              std::string materialName = materialNameRaw.asChar();
-              material.setName(materialName);
+							for (unsigned int p = 0; p < plugs.length(); p++) {
+								MPlug object = plugs[p];
+								if (!object.isNull()) {
+									MObject node = object.node();
+									if (node.hasFn(MFn::kFileTexture)) {
+										MFnDependencyNode* diffuseMapNode = new MFnDependencyNode(node);
 
-              Vector4MaterialParameter* diffuseColorParameter = new Vector4MaterialParameter("DiffuseColor");
-              diffuseColorParameter->value.x = color.r;
-              diffuseColorParameter->value.y = color.g;
-              diffuseColorParameter->value.z = color.b;
-              diffuseColorParameter->value.w = color.a;
+										MPlug filenamePlug = diffuseMapNode->findPlug ("fileTextureName");
+										MString mayaFileName;
+										filenamePlug.getValue (mayaFileName);
+										std::string diffuseMapFileName = mayaFileName.asChar();
+										std::string diffuseMapAssetPath = extractAssetPath(diffuseMapFileName);
+										material.addTexture("ColorMap", diffuseMapAssetPath);
+									}
+								} 
+							}
 
-              material.addParameter(diffuseColorParameter);
-            }
-          }
-        }
+							MColor color = lambertShader.color();
+							MString materialNameRaw = lambertShader.name();
+							std::string materialName = materialNameRaw.asChar();
+							material.setName(materialName);
 
-        {
-          if (material.hasTextures()) {
-            material.setEffect("shaders/deferred_render_colormap_normal_depth.cg");
-          }
-          else {
-            material.setEffect("shaders/deferred_render_color_normal_depth.cg");
-          }
-        }
-     
+							Vector4MaterialParameter* diffuseColorParameter = new Vector4MaterialParameter("DiffuseColor");
+							diffuseColorParameter->value.x = color.r;
+							diffuseColorParameter->value.y = color.g;
+							diffuseColorParameter->value.z = color.b;
+							diffuseColorParameter->value.w = color.a;
 
-        {
-          FloatMaterialParameter* specularPowerParameter = new FloatMaterialParameter("SpecularPower");
-          specularPowerParameter->value = 1.0;
-          material.addParameter(specularPowerParameter);
-        }
+							material.addParameter(diffuseColorParameter);
+						}
+					}
+				}
 
-        {
-          FloatMaterialParameter* specularIntensityParameter = new FloatMaterialParameter("SpecularIntensity");
-          specularIntensityParameter->value = 1.0f;
-          material.addParameter(specularIntensityParameter);
-        }
+				{
+					if (material.hasTextures()) {
+						material.setEffect("shaders/deferred_render_colormap_normal_depth.cg");
+					}
+					else {
+						material.setEffect("shaders/deferred_render_color_normal_depth.cg");
+					}
+				}
 
-        {
-          FloatMaterialParameter* diffusePowerParameter = new FloatMaterialParameter("DiffusePower");
-          diffusePowerParameter->value = 1.0f;
-          material.addParameter(diffusePowerParameter);
-        }
 
-        submesh.setMaterial(material);
-      }
+				{
+					FloatMaterialParameter* specularPowerParameter = new FloatMaterialParameter("SpecularPower");
+					specularPowerParameter->value = 1.0;
+					material.addParameter(specularPowerParameter);
+				}
 
-      model->addSubMesh(submesh);
-    }
-  }
+				{
+					FloatMaterialParameter* specularIntensityParameter = new FloatMaterialParameter("SpecularIntensity");
+					specularIntensityParameter->value = 1.0f;
+					material.addParameter(specularIntensityParameter);
+				}
+
+				{
+					FloatMaterialParameter* diffusePowerParameter = new FloatMaterialParameter("DiffusePower");
+					diffusePowerParameter->value = 1.0f;
+					material.addParameter(diffusePowerParameter);
+				}
+
+				submesh.setMaterial(material);
+			}
+
+			model->addSubMesh(submesh);
+		}
+	}
 }
 
 Model* MayaReader::read(const char* filename) {
 
-  MStatus status = MLibrary::initialize(filename);
-  if (!status) {
-    std::cerr << "Failed to initialize Maya" << std::endl;
-    return NULL;
-  }
+	MStatus status = MLibrary::initialize(filename);
+	if (!status) {
+		std::cerr << "Failed to initialize Maya" << std::endl;
+		return NULL;
+	}
 
-  MFileIO::newFile(true);
+	MFileIO::newFile(true);
 
-  status = MFileIO::open(filename);
-  if ( !status ) {
-    std::cerr << "Failed to open Maya source file: " << status.errorString().asUTF8() << std::endl;
-    return NULL;
-  }
+	status = MFileIO::open(filename);
+	if ( !status ) {
+		std::cerr << "Failed to open Maya source file: " << status.errorString().asUTF8() << std::endl;
+		return NULL;
+	}
 
-  status = MGlobal::executeCommand( "delete -ch" );
-  if (!status) {
-    std::cerr << "Failed to cleanup maya source objects" << std::endl;
-    return NULL;
-  }
+	status = MGlobal::executeCommand( "delete -ch" );
+	if (!status) {
+		std::cerr << "Failed to cleanup maya source objects" << std::endl;
+		return NULL;
+	}
 
-  Model* model = new Model();
-  extractPolygons(model);
+	Model* model = new Model();
+	//extractLayers(model);
+	extractPolygons(model);
 
-  //MLibrary::cleanup();
+	//MLibrary::cleanup();
 
-  return model;
+	//extractGeometry(model);
+
+	return model;
 }
 
 bool MayaReader::acceptExtension(const std::string& extension) {
-  bool isMayaBinary = extension.compare("mb") == 0;
-  bool isMayaAscii = extension.compare("ma") == 0;
-  return isMayaBinary || isMayaAscii;
+	bool isMayaBinary = extension.compare("mb") == 0;
+	bool isMayaAscii = extension.compare("ma") == 0;
+	return isMayaBinary || isMayaAscii;
 }

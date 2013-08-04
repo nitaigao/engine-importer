@@ -26,9 +26,9 @@ int main(int argc, char **argv)  {
 
 	std::clog << "Finished" << std::endl;
 
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	system("pause");
-#endif
+//#endif
 
 	return 0;
 }
